@@ -66,13 +66,15 @@ fun TransformEditor(
 
 @Composable
 private fun NumberField(value: Float, onValueChange: (Float) -> Unit, label: String) {
-    var text by remember { mutableStateOf(value.toString()) }
+    var text by remember(value) { mutableStateOf(value.toString()) }
     TextField(
         value = text,
         onValueChange = { text = it },
         modifier = Modifier.onFocusChanged {
             if (!it.hasFocus) {
-                onValueChange(text.toFloatOrNull() ?: 0f)
+                val newValue = text.toFloatOrNull() ?: 0f
+                text = newValue.toString()
+                onValueChange(newValue)
             }
         },
         label = { Text(label, fontSize = 8.sp) },
@@ -85,7 +87,6 @@ fun GroupEditor(group: Group, onEntityChange: (Entity) -> Unit) = group.run {
         entities.forEachIndexed { originalIndex, entity ->
             PropertyEditor(
                 entity = entity, onEntityChange = {
-                    println("Entity $entity changed to $it")
                     onEntityChange(group.copy(entities = group.entities.mapIndexed { i, e ->
                         if (i == originalIndex) {
                             it
