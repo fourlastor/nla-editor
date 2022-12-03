@@ -6,8 +6,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.fourlastor.entity.Entity
@@ -65,9 +66,15 @@ fun TransformEditor(
 
 @Composable
 private fun NumberField(value: Float, onValueChange: (Float) -> Unit, label: String) {
+    var text by remember { mutableStateOf(value.toString()) }
     TextField(
-        value = value.toString(),
-        onValueChange = { onValueChange(it.toFloatOrNull() ?: 0f) },
+        value = text,
+        onValueChange = { text = it },
+        modifier = Modifier.onFocusChanged {
+            if (!it.hasFocus) {
+                onValueChange(text.toFloatOrNull() ?: 0f)
+            }
+        },
         label = { Text(label, fontSize = 8.sp) },
     )
 }
