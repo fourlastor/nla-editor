@@ -1,16 +1,10 @@
 package io.github.fourlastor.entity
 
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.FilterQuality
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.DrawTransform
 import androidx.compose.ui.graphics.drawscope.scale
-import androidx.compose.ui.graphics.drawscope.withTransform
-import androidx.compose.ui.unit.IntOffset
 
 sealed interface Entity {
-    fun draw(drawScope: DrawScope)
     fun x(x: Float): Entity
     fun y(y: Float): Entity
     fun rotation(rotation: Float): Entity
@@ -24,11 +18,6 @@ data class Group(
     override val name: String = "Group(${entities.size})",
     override val transform: Transform = Transform.IDENTITY,
 ) : Entity {
-    override fun draw(drawScope: DrawScope) = drawScope.withTransform(transform.action) {
-        for (entity in entities) {
-            entity.draw(this)
-        }
-    }
 
     override fun x(x: Float) = copy(transform = transform.x(x))
 
@@ -38,17 +27,10 @@ data class Group(
 }
 
 data class Image(
-    val image: ImageBitmap,
+    val path: String,
     override val name: String = "Image",
     override val transform: Transform = Transform.IDENTITY,
 ) : Entity {
-    override fun draw(drawScope: DrawScope) = drawScope.withTransform(transform.action) {
-        drawImage(
-            image = image,
-            dstOffset = intCenter - image.center,
-            filterQuality = FilterQuality.None
-        )
-    }
 
     override fun x(x: Float) = copy(transform = transform.x(x))
 
@@ -56,12 +38,6 @@ data class Image(
 
     override fun rotation(rotation: Float) = copy(transform = transform.rotation(rotation))
 }
-
-private val DrawScope.intCenter: IntOffset
-    get() = IntOffset(center.x.toInt(), center.y.toInt())
-private val ImageBitmap.center: IntOffset
-    get() = IntOffset(width / 2, height / 2)
-
 
 data class Transform(
     val offset: Offset,

@@ -11,9 +11,19 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.FilterQuality
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.input.pointer.PointerButton
+import androidx.compose.ui.res.loadImageBitmap
+import androidx.compose.ui.res.useResource
+import androidx.compose.ui.unit.IntOffset
+import io.github.fourlastor.entity.Entity
+import io.github.fourlastor.entity.Group
+import io.github.fourlastor.entity.Image
+import io.github.fourlastor.entity.Transform
 
 @ExperimentalFoundationApi
 @Composable
@@ -22,6 +32,7 @@ fun PreviewPane(
     modifier: Modifier,
 ) {
     var pan by remember { mutableStateOf(Offset.Zero) }
+    val entityPreview by remember { derivedStateOf { toPreview(state.entity) } }
     Box(
         modifier = modifier.onDrag(matcher = PointerMatcher.mouse(PointerButton.Secondary)) {
             pan += it
@@ -33,7 +44,7 @@ fun PreviewPane(
                 translate(pan.x, pan.y)
                 scale(zoom * 20)
             }) {
-                state.entity.draw(this)
+                entityPreview.draw(this)
             }
         }
 
@@ -44,3 +55,49 @@ fun PreviewPane(
         )
     }
 }
+
+private fun toPreview(entity: Entity): EntityPreview = when (entity) {
+    is Group -> GroupPreview(
+        entities = entity.entities.map { toPreview(it) },
+        transform = entity.transform,
+    )
+
+    is Image -> ImagePreview(
+        image = useResource(entity.path) { loadImageBitmap(it) },
+        transform = entity.transform,
+    )
+}
+
+private sealed interface EntityPreview {
+    fun draw(drawScope: DrawScope)
+}
+
+private data class GroupPreview(
+    val entities: List<EntityPreview>,
+    val transform: Transform,
+) : EntityPreview {
+
+    override fun draw(drawScope: DrawScope) = drawScope.withTransform(transform.action) {
+        for (entity in entities) {
+            entity.draw(this)
+        }
+    }
+}
+
+private data class ImagePreview(
+    val transform: Transform,
+    val image: ImageBitmap,
+) : EntityPreview {
+    override fun draw(drawScope: DrawScope) = drawScope.withTransform(transform.action) {
+        drawImage(
+            image = image,
+            dstOffset = intCenter - image.center,
+            filterQuality = FilterQuality.None
+        )
+    }
+}
+
+private val DrawScope.intCenter: IntOffset
+    get() = IntOffset(center.x.toInt(), center.y.toInt())
+private val ImageBitmap.center: IntOffset
+    get() = IntOffset(width / 2, height / 2)

@@ -8,8 +8,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.loadImageBitmap
-import androidx.compose.ui.res.useResource
 import io.github.fourlastor.entity.Entity
 import io.github.fourlastor.entity.Group
 import io.github.fourlastor.entity.Image
@@ -53,9 +51,11 @@ fun rememberEditorState() = remember {
         EditorState(
             entity = Group(
                 entities = listOf(
-                    Image(useResource("player.png") { loadImageBitmap(it) }),
                     Image(
-                        useResource("player.png") { loadImageBitmap(it) },
+                        path = "player.png",
+                    ),
+                    Image(
+                        path = "player.png",
                         transform = Transform.IDENTITY.copy(rotation = 90f, offset = Offset(4f, 5f), scale = 0.4f),
                     ),
                 )
