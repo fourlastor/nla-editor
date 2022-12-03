@@ -38,7 +38,7 @@ compose.desktop {
         mainClass = "MainKt"
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "demo"
+            packageName = "nla-editor"
             packageVersion = "1.0.0"
         }
     }
