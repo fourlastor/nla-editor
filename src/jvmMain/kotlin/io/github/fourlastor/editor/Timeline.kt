@@ -50,7 +50,7 @@ fun Timeline(
             }
             Canvas(modifier = Modifier.fillMaxWidth().height(150.dp)) {
                 val secondOffset = secondWidth.toPx()
-                for (s in 0..duration.inWholeSeconds) {
+                for (s in 0 until duration.inWholeSeconds) {
                     val xOffset = s * secondOffset
                     drawLine(
                         color = Color.Black,
@@ -59,12 +59,12 @@ fun Timeline(
                         strokeWidth = 2f,
                     )
 
-                    for (ms in 1..9) {
+                    for (ms in 1 until 10) {
                         val msOffset = ms / 10f * secondOffset
                         drawLine(
                             color = Color.Black,
                             start = Offset(xOffset + msOffset, 0f),
-                            end = Offset(xOffset+msOffset, 50f),
+                            end = Offset(xOffset + msOffset, 50f),
                             strokeWidth = 1f,
                         )
                     }
