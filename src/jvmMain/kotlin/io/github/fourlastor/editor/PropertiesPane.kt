@@ -74,7 +74,7 @@ private fun NumberField(value: Float, onValueChange: (Float) -> Unit, label: Str
 
 @Composable
 fun GroupEditor(group: Group, onEntityChange: (Entity) -> Unit) = group.run {
-    Column(modifier = Modifier.padding(start = 4.dp)) {
+    Column(modifier = Modifier.padding(start = 12.dp)) {
         entities.forEachIndexed { originalIndex, entity ->
             PropertyEditor(
                 entity = entity, onEntityChange = {
