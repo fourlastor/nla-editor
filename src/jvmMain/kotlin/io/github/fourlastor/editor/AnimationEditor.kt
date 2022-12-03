@@ -5,8 +5,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -21,7 +20,7 @@ import io.github.fourlastor.entity.Transform
 @Composable
 @Preview
 fun AnimationEditor() {
-    val state = rememberEditorState()
+    var state by rememberEditorState()
     MaterialTheme {
         Row {
             Column(
@@ -42,7 +41,9 @@ fun AnimationEditor() {
                 )
             }
             PropertiesPane(
+                state = state,
                 modifier = Modifier.fillMaxSize(),
+                onEntityChange = { state = state.copy(entity = it) },
             )
         }
     }
@@ -50,16 +51,18 @@ fun AnimationEditor() {
 
 @Composable
 fun rememberEditorState() = remember {
-    EditorState(
-        entity = Group(
-            entities = listOf(
-                Image(useResource("player.png") { loadImageBitmap(it) }),
-                Image(
-                    useResource("player.png") { loadImageBitmap(it) },
-                    Transform.IDENTITY.copy(rotation = 90f, offset = Offset(4f, 5f), scale = 0.4f),
-                ),
-            )
-        ),
+    mutableStateOf(
+        EditorState(
+            entity = Group(
+                entities = listOf(
+                    Image(useResource("player.png") { loadImageBitmap(it) }),
+                    Image(
+                        useResource("player.png") { loadImageBitmap(it) },
+                        transform = Transform.IDENTITY.copy(rotation = 90f, offset = Offset(4f, 5f), scale = 0.4f),
+                    ),
+                )
+            ),
+        )
     )
 }
 

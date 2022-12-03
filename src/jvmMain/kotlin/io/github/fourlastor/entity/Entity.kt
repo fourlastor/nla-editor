@@ -11,12 +11,17 @@ import androidx.compose.ui.unit.IntOffset
 
 sealed interface Entity {
     fun draw(drawScope: DrawScope)
+    fun x(x: Float): Entity
+    fun y(y: Float): Entity
+    fun rotation(rotation: Float): Entity
 
     val transform: Transform
+    val name: String
 }
 
 data class Group(
     val entities: List<Entity>,
+    override val name: String = "Group(${entities.size})",
     override val transform: Transform = Transform.IDENTITY,
 ) : Entity {
     override fun draw(drawScope: DrawScope) = drawScope.withTransform(transform.action) {
@@ -24,10 +29,17 @@ data class Group(
             entity.draw(this)
         }
     }
+
+    override fun x(x: Float) = copy(transform = transform.x(x))
+
+    override fun y(y: Float) = copy(transform = transform.y(y))
+
+    override fun rotation(rotation: Float) = copy(transform = transform.rotation(rotation))
 }
 
 data class Image(
     val image: ImageBitmap,
+    override val name: String = "Image",
     override val transform: Transform = Transform.IDENTITY,
 ) : Entity {
     override fun draw(drawScope: DrawScope) = drawScope.withTransform(transform.action) {
@@ -37,6 +49,12 @@ data class Image(
             filterQuality = FilterQuality.None
         )
     }
+
+    override fun x(x: Float) = copy(transform = transform.x(x))
+
+    override fun y(y: Float) = copy(transform = transform.y(y))
+
+    override fun rotation(rotation: Float) = copy(transform = transform.rotation(rotation))
 }
 
 private val DrawScope.intCenter: IntOffset
@@ -58,6 +76,12 @@ data class Transform(
         }
         scale(scale)
     }
+
+    fun x(x: Float) = copy(offset = offset.copy(x = x))
+
+    fun y(y: Float) = copy(offset = offset.copy(y = y))
+
+    fun rotation(rotation: Float) = copy(rotation = rotation)
 
     companion object {
         val IDENTITY = Transform(
