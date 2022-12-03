@@ -101,6 +101,8 @@ fun GroupEditor(group: Group, onEntityChange: (Entity) -> Unit) = group.run {
 }
 
 @Composable
-fun ImageEditor(image: Image) {
+fun ImageEditor(
+    @Suppress("UNUSED_PARAMETER") image: Image, // one day
+) {
     Text("TODO")
 }
