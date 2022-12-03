@@ -1,14 +1,17 @@
 package io.github.fourlastor.editor
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.ProvideTextStyle
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.fourlastor.entity.Entity
@@ -26,10 +29,12 @@ fun PropertiesPane(
         modifier = modifier
             .verticalScroll(rememberScrollState())
     ) {
-        PropertyEditor(
-            entity = state.entity,
-            onEntityChange = onEntityChange,
-        )
+        ProvideTextStyle(TextStyle.Default.copy(fontSize = 8.sp)) {
+            PropertyEditor(
+                entity = state.entity,
+                onEntityChange = onEntityChange,
+            )
+        }
     }
 }
 
@@ -70,14 +75,14 @@ private fun NumberField(value: Float, onValueChange: (Float) -> Unit, label: Str
     TextField(
         value = text,
         onValueChange = { text = it },
-        modifier = Modifier.onFocusChanged {
+        modifier = Modifier.padding(2.dp).heightIn(32.dp).onFocusChanged {
             if (!it.hasFocus) {
                 val newValue = text.toFloatOrNull() ?: 0f
                 text = newValue.toString()
                 onValueChange(newValue)
             }
         },
-        label = { Text(label, fontSize = 8.sp) },
+        label = { Text(label) },
     )
 }
 
