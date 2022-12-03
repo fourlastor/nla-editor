@@ -1,6 +1,5 @@
 package io.github.fourlastor.editor
 
-import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -18,7 +17,6 @@ import io.github.fourlastor.entity.Transform
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-@Preview
 fun AnimationEditor() {
     var state by rememberEditorState()
     MaterialTheme {
