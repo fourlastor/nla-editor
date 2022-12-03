@@ -8,6 +8,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.FilterQuality
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.res.loadImageBitmap
 import androidx.compose.ui.res.useResource
@@ -26,7 +28,7 @@ fun PreviewPane(
             scale(zoom * 20) {
                 drawImage(
                     image = bmp,
-                    dstOffset = IntOffset(center.x.toInt(), center.y.toInt()),
+                    dstOffset = intCenter - bmp.center,
                     filterQuality = FilterQuality.None
                 )
             }
@@ -39,3 +41,8 @@ fun PreviewPane(
         )
     }
 }
+
+private val DrawScope.intCenter: IntOffset
+    get() = IntOffset(center.x.toInt(), center.y.toInt())
+private val ImageBitmap.center: IntOffset
+    get() = IntOffset(width / 2, height / 2)
