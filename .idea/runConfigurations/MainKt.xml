@@ -1,7 +1,7 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="MainKt" type="JetRunConfigurationType" nameIsGenerated="true">
     <option name="MAIN_CLASS_NAME" value="MainKt" />
-    <module name="demo.jvmMain" />
+    <module name="nla-editor.jvmMain" />
     <shortenClasspath name="NONE" />
     <method v="2">
       <option name="Make" enabled="true" />
