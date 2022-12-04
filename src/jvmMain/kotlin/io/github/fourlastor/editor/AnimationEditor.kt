@@ -19,6 +19,7 @@ import io.kanro.compose.jetbrains.expui.style.areaBackground
 import io.kanro.compose.jetbrains.expui.theme.DarkTheme
 import io.kanro.compose.jetbrains.expui.window.JBWindow
 import kotlinx.serialization.json.Json
+import java.io.File
 import kotlin.system.exitProcess
 
 @Composable

@@ -5,19 +5,20 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import io.github.fourlastor.entity.Entities
-import io.github.fourlastor.entity.Entity
-import io.github.fourlastor.entity.EntityNode
-import io.github.fourlastor.entity.GroupNode
+import io.github.fourlastor.entity.*
 import io.kanro.compose.jetbrains.expui.control.Icon
 import io.kanro.compose.jetbrains.expui.control.Label
+import io.kanro.compose.jetbrains.expui.control.TextField
 
 /**
  * Property inspector panel.
@@ -47,6 +48,7 @@ fun LayersPane(
             onEntitySelected = { it: EntityNode ->
                 selectedEntity = it
             },
+            onEntityChange = onEntityChange,
         )
     }
 }
@@ -58,11 +60,12 @@ private fun EntityTreeView(
     selectedEntity: EntityNode?,
     onEntitySelected: (EntityNode) -> Unit,
     modifier: Modifier = Modifier,
+    onEntityChange: (Entity) -> Unit,
 ) {
     if (entity is GroupNode) {
-        GroupNodeView(entity, selectedEntity, onEntitySelected, modifier)
+        GroupNodeView(entity, selectedEntity, onEntitySelected, modifier, onEntityChange)
     } else {
-        EntityNodeView(entity, selectedEntity, onEntitySelected, modifier)
+        EntityNodeView(entity, selectedEntity, onEntitySelected, modifier, onEntityChange)
     }
 }
 
@@ -100,6 +103,7 @@ private fun GroupNodeView(
     selectedEntity: EntityNode?,
     onEntitySelected: (EntityNode) -> Unit,
     modifier: Modifier,
+    onEntityChange: (Entity) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
     Column(
@@ -127,7 +131,7 @@ private fun GroupNodeView(
                 verticalArrangement = Arrangement.spacedBy(2.dp),
                 modifier = Modifier.padding(start = 24.dp).fillMaxWidth(),
             ) {
-                group.children.forEach { EntityTreeView(it, selectedEntity, onEntitySelected, Modifier.fillMaxWidth()) }
+                group.children.forEach { EntityTreeView(it, selectedEntity, onEntitySelected, Modifier.fillMaxWidth(), onEntityChange) }
             }
         }
     }
@@ -142,8 +146,28 @@ private fun EntityNodeView(
     selectedEntity: EntityNode?,
     onEntitySelected: (EntityNode) -> Unit,
     modifier: Modifier,
+    onEntityChange: (Entity) -> Unit,
 ) {
-    Selectable(selected = entity == selectedEntity, onSelected = { onEntitySelected(entity) }, modifier = modifier) {
-        Label(entity.entity.name)
+    var text by remember(entity.entity.name) { mutableStateOf(entity.entity.name.toString()) }
+    var selected = entity == selectedEntity;
+    Selectable(selected = selected, onSelected = { onEntitySelected(entity) }, modifier = modifier) {
+        when (selected) {
+            true -> TextField(
+                value = text,
+                onValueChange = {
+                    text = it
+                },
+                modifier = Modifier
+                    .padding(2.dp),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Done
+                ),
+            )
+            else -> {
+                onEntityChange(entity.entity.name(text));
+                Label(entity.entity.name)
+            }
+        }
     }
 }
