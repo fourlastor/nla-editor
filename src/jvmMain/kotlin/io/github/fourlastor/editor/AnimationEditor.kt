@@ -2,8 +2,9 @@ package io.github.fourlastor.editor
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.onDrag
+import androidx.compose.foundation.gestures.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,7 +19,9 @@ import io.kanro.compose.jetbrains.expui.style.LocalAreaColors
 import io.kanro.compose.jetbrains.expui.style.areaBackground
 import io.kanro.compose.jetbrains.expui.theme.DarkTheme
 import io.kanro.compose.jetbrains.expui.window.JBWindow
+import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
+import java.io.File
 import kotlin.system.exitProcess
 
 @Composable
@@ -141,15 +144,29 @@ private fun EditorUi(
                 .fillMaxWidth()
                 .onDrag { horizontalCutPoint += it.y / height }
             )
+            val propertyKeysListState = rememberLazyListState()
+            val propertyNamesListState = rememberLazyListState()
+            val scope = rememberCoroutineScope()
+            val scrollState = rememberScrollableState { delta ->
+                scope.launch {
+                    propertyKeysListState.scrollBy(-delta)
+                    propertyNamesListState.scrollBy(-delta)
+                }
+                delta
+            }
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxHeight()
+                    .scrollable(scrollState, orientation = Orientation.Vertical)
             ) {
                 Timeline(
+                    entities = entities,
+                    propertyListState = propertyKeysListState,
                     modifier = Modifier
                         .fillMaxHeight()
                         .fillMaxWidth(verticalCutPoint)
+                        .padding(start = 4.dp)
                         .areaBackground()
                         .zIndex(2f),
                 )
@@ -160,14 +177,11 @@ private fun EditorUi(
                         .fillMaxHeight()
                         .onDrag { verticalCutPoint += it.x / width }
                 )
-                // Keyframes properties list - to sync with the timeline
-                Box(
-                    modifier = Modifier.fillMaxHeight()
-                        .fillMaxWidth()
-                        .areaBackground()
-                ) {
-
-                }
+                KeyFramesNames(
+                    propertyNamesListState = propertyNamesListState,
+                    entities = entities,
+                    modifier = Modifier.padding(end = 4.dp),
+                )
             }
         }
     }
