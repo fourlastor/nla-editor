@@ -1,19 +1,24 @@
 package io.github.fourlastor.editor
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.fourlastor.entity.Entity
 import io.github.fourlastor.entity.Group
 import io.github.fourlastor.entity.Image
 import io.github.fourlastor.entity.Transform
+import io.kanro.compose.jetbrains.expui.control.Icon
 import io.kanro.compose.jetbrains.expui.control.Label
 import io.kanro.compose.jetbrains.expui.control.TextField
 
@@ -23,20 +28,127 @@ fun PropertiesPane(
     modifier: Modifier,
     onEntityChange: (Entity) -> Unit,
 ) {
+    var selectedEntity by remember { mutableStateOf<Entity?>(null) }
+
     Column(
         modifier = modifier
+            .fillMaxSize()
             .padding(2.dp)
-            .verticalScroll(rememberScrollState())
     ) {
-        PropertyEditor(
+        EntityTree(
             entity = state.entity,
-            onEntityChange = onEntityChange,
+            modifier = Modifier.fillMaxHeight(0.7f)
+                .verticalScroll(rememberScrollState())
+                .fillMaxWidth(),
+            selectedEntity = selectedEntity,
+            onEntitySelected = { it: Entity ->
+                selectedEntity = it
+            },
         )
+        val selected = selectedEntity
+        if (selected != null) {
+            PropertyEditor(selected) {
+                // TODO: re-enable editing
+            }
+        }
     }
 }
 
 @Composable
-fun PropertyEditor(entity: Entity, onEntityChange: (Entity) -> Unit) {
+private fun EntityTree(
+    entity: Entity,
+    selectedEntity: Entity?,
+    onEntitySelected: (Entity) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    if (entity is Group) {
+        GroupNode(entity, selectedEntity, onEntitySelected, modifier)
+    } else {
+        EntityNode(entity, selectedEntity, onEntitySelected, modifier)
+    }
+}
+
+val selectedColor = Color(0.3f, 0.5f, 0.8f)
+
+@Composable
+private fun Selectable(
+    selected: Boolean,
+    onSelected: () -> Unit,
+    modifier: Modifier = Modifier,
+    content: @Composable BoxScope.() -> Unit,
+) {
+    val bgColor = if (selected) {
+        selectedColor
+    } else Color.Unspecified
+    Box(
+        modifier = modifier
+            .selectable(
+                selected = selected,
+                onClick = onSelected,
+            )
+            .background(bgColor),
+        content = content,
+    )
+
+}
+
+@Composable
+private fun GroupNode(
+    group: Group,
+    selectedEntity: Entity?,
+    onEntitySelected: (Entity) -> Unit,
+    modifier: Modifier,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    Column(
+        modifier = modifier,
+    ) {
+        Selectable(
+            modifier = Modifier.fillMaxWidth(),
+            selected = group == selectedEntity,
+            onSelected = { onEntitySelected(group) }
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(2.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(
+                    resource = "icons/arrow.svg",
+                    modifier = Modifier
+                        .size(20.dp)
+                        .rotate(if (expanded) 90f else 0f)
+                        .clickable {
+                            expanded = !expanded
+                        },
+                )
+                Label(group.name)
+            }
+        }
+        if (expanded) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+                modifier = Modifier.padding(start = 24.dp).fillMaxWidth(),
+            ) {
+                group.entities.forEach { EntityTree(it, selectedEntity, onEntitySelected, Modifier.fillMaxWidth()) }
+            }
+        }
+    }
+}
+
+@Composable
+private fun EntityNode(
+    entity: Entity,
+    selectedEntity: Entity?,
+    onEntitySelected: (Entity) -> Unit,
+    modifier: Modifier,
+) {
+    Selectable(selected = entity == selectedEntity, onSelected = { onEntitySelected(entity) }, modifier = modifier) {
+        Label(entity.name)
+    }
+}
+
+@Composable
+private fun PropertyEditor(entity: Entity, onEntityChange: (Entity) -> Unit) {
     Column {
         Label(entity.name, fontSize = 12.sp)
         TransformEditor(
@@ -45,15 +157,15 @@ fun PropertyEditor(entity: Entity, onEntityChange: (Entity) -> Unit) {
             onYChange = { onEntityChange(entity.y(it)) },
             onRotationChange = { onEntityChange(entity.rotation(it)) }
         )
-        when (entity) {
-            is Group -> GroupEditor(entity, onEntityChange)
-            is Image -> ImageEditor(entity)
-        }
+//        when (entity) {
+//            is Group -> GroupEditor(entity, onEntityChange)
+//            is Image -> ImageEditor(entity)
+//        }
     }
 }
 
 @Composable
-fun TransformEditor(
+private fun TransformEditor(
     transform: Transform,
     onXChange: (Float) -> Unit,
     onYChange: (Float) -> Unit,
@@ -81,13 +193,12 @@ private fun NumberField(value: Float, onValueChange: (Float) -> Unit, label: Str
                     onValueChange(newValue)
                 }
             },
-//        label = { Text(label) },
         )
     }
 }
 
 @Composable
-fun GroupEditor(group: Group, onEntityChange: (Entity) -> Unit) = group.run {
+private fun GroupEditor(group: Group, onEntityChange: (Entity) -> Unit) = group.run {
     Column(modifier = Modifier.padding(start = 12.dp)) {
         entities.forEachIndexed { originalIndex, entity ->
             PropertyEditor(
@@ -106,7 +217,7 @@ fun GroupEditor(group: Group, onEntityChange: (Entity) -> Unit) = group.run {
 }
 
 @Composable
-fun ImageEditor(
+private fun ImageEditor(
     @Suppress("UNUSED_PARAMETER") image: Image, // one day
 ) {
     Label("TODO")
