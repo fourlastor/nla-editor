@@ -122,7 +122,7 @@ private fun EditorUi(
                         .fillMaxHeight()
                         .onDrag { verticalCutPoint += it.x / width }
                 )
-                PropertiesPane(
+                LayersPane(
                     entities = entities,
                     modifier = Modifier
                         .fillMaxSize()
@@ -194,9 +194,12 @@ private fun EditorUi(
 
 @Composable
 private fun rememberEditorState() = remember {
+    val imgPath = File("src/jvmMain/resources/player.png").absolutePath
     mutableStateOf(
         EditorState(
-            entities = Entities.empty(),
+            entities = Entities.empty()
+                .image(0, "Hero", imgPath)
+                .image(0, "MiniHEro", imgPath, Transform.IDENTITY.copy(scale = 0.4f, rotation = 90f)),
         )
     )
 }
