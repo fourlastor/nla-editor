@@ -29,7 +29,7 @@ fun PreviewPane(
     modifier: Modifier,
 ) {
     var pan by remember { mutableStateOf(Offset.Zero) }
-    val entityPreview by remember { derivedStateOf { toPreview(state.entities.asNode()) } }
+    val entityPreview by remember(state.entities) { derivedStateOf { toPreview(state.entities.asNode()) } }
     Box(
         modifier = modifier.onDrag(matcher = PointerMatcher.mouse(PointerButton.Secondary)) {
             pan += it

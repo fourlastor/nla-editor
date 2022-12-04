@@ -18,8 +18,7 @@ sealed interface Entity {
 data class Group(
     override val id: Long,
     override val parentId: Long?,
-    val entities: List<Entity>,
-    override val name: String = "Group(${entities.size})",
+    override val name: String = "Group",
     override val transform: Transform = Transform.IDENTITY,
 ) : Entity {
 
@@ -33,9 +32,9 @@ data class Group(
 data class Image(
     override val id: Long,
     override val parentId: Long?,
-    val path: String,
     override val name: String = "Image",
     override val transform: Transform = Transform.IDENTITY,
+    val path: String,
 ) : Entity {
 
     override fun x(x: Float) = copy(transform = transform.x(x))

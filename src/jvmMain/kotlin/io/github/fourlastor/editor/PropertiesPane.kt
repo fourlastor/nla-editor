@@ -26,7 +26,7 @@ fun PropertiesPane(
     onEntityChange: (Entity) -> Unit,
 ) {
     var selectedEntity by remember { mutableStateOf<EntityNode?>(null) }
-    val rootNode by remember { derivedStateOf { state.entities.asNode() } }
+    val rootNode by remember(state.entities) { derivedStateOf { state.entities.asNode() } }
 
     Column(
         modifier = modifier
@@ -45,9 +45,10 @@ fun PropertiesPane(
         )
         val selected = selectedEntity
         if (selected != null) {
-            PropertyEditor(selected) {
-                // TODO: re-enable editing
-            }
+            PropertyEditor(
+                node = selected,
+                onEntityChange = onEntityChange,
+            )
         }
     }
 }
@@ -199,18 +200,11 @@ private fun NumberField(value: Float, onValueChange: (Float) -> Unit, label: Str
 @Composable
 private fun GroupEditor(group: GroupNode, onEntityChange: (Entity) -> Unit) = group.run {
     Column(modifier = Modifier.padding(start = 12.dp)) {
-        group.children.forEachIndexed { originalIndex, entity ->
+        group.children.forEach { entity ->
             PropertyEditor(
-                node = entity
-            ) {
-//                onEntityChange(group.copy(entities = group.entities.mapIndexed { i, e ->
-//                    if (i == originalIndex) {
-//                        it
-//                    } else {
-//                        e
-//                    }
-//                }))
-            }
+                node = entity,
+                onEntityChange = onEntityChange
+            )
         }
     }
 }

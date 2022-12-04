@@ -46,7 +46,10 @@ fun AnimationEditor() {
                 .fillMaxSize()
                 .areaBackground()
                 .zIndex(2f),
-            onEntityChange = { },
+            onEntityChange = {
+                val entities = state.entities.update(it)
+                state = state.copy(entities = entities)
+            },
         )
     }
 }

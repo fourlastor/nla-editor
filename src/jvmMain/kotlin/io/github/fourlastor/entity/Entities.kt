@@ -7,7 +7,6 @@ data class Entities(
     private val root = Group(
         0,
         null,
-        emptyList(),
         "Root",
     )
 
@@ -30,6 +29,10 @@ data class Entities(
             }
         }
 
+    fun update(entity: Entity): Entities = copy(
+        entities = entities.map { if (it.id == entity.id) entity else it },
+    )
+
     fun group(
         parent: Long,
         name: String,
@@ -42,7 +45,6 @@ data class Entities(
                 id = newId,
                 parentId = parent,
                 name = name,
-                entities = emptyList(),
                 transform = transform,
             )
         )
@@ -61,8 +63,8 @@ data class Entities(
                 id = newId,
                 parentId = parent,
                 name = name,
-                path = path,
                 transform = transform,
+                path = path,
             ),
         )
     }
