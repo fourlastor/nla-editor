@@ -1,6 +1,4 @@
-import org.jetbrains.compose.compose
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("multiplatform")
@@ -23,10 +21,14 @@ kotlin {
         }
         withJava()
     }
+    @Suppress("UNUSED_VARIABLE")
     sourceSets {
         val jvmMain by getting {
             dependencies {
-                implementation(compose.desktop.currentOs)
+                implementation(compose.desktop.currentOs) {
+                    exclude("org.jetbrains.compose.material")
+                }
+                implementation("com.bybutter.compose:compose-jetbrains-expui-theme:2.1.0")
             }
         }
         val jvmTest by getting
@@ -38,6 +40,7 @@ compose.desktop {
         mainClass = "MainKt"
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
+            modules("jdk.unsupported")
             packageName = "nla-editor"
             packageVersion = "1.0.0"
         }

@@ -3,45 +3,54 @@ package io.github.fourlastor.editor
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import io.github.fourlastor.entity.Entity
 import io.github.fourlastor.entity.Group
 import io.github.fourlastor.entity.Image
 import io.github.fourlastor.entity.Transform
+import io.kanro.compose.jetbrains.expui.style.LocalAreaColors
+import io.kanro.compose.jetbrains.expui.style.areaBackground
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AnimationEditor() {
     var state by rememberEditorState()
-    MaterialTheme {
-        Row {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth(0.8f)
-                    .fillMaxHeight(),
-            ) {
-                PreviewPane(
-                    state = state,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxHeight(0.7f),
-                )
-                Timeline(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color(0.8f, 0.7f, 0.3f)),
-                )
-            }
-            PropertiesPane(
+    Row(
+        modifier = Modifier.fillMaxSize(),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth(0.8f)
+                .fillMaxHeight(),
+            verticalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
+            PreviewPane(
                 state = state,
-                modifier = Modifier.fillMaxSize(),
-                onEntityChange = { state = state.copy(entity = it) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight(0.7f),
+            )
+            Spacer(Modifier.background(LocalAreaColors.current.startBorderColor).height(1.dp).fillMaxWidth())
+            Timeline(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .areaBackground()
+                    .zIndex(2f),
             )
         }
+        Spacer(Modifier.background(LocalAreaColors.current.startBorderColor).width(1.dp).fillMaxHeight())
+        PropertiesPane(
+            state = state,
+            modifier = Modifier
+                .fillMaxSize()
+                .areaBackground()
+                .zIndex(2f),
+            onEntityChange = { state = state.copy(entity = it) },
+        )
     }
 }
 

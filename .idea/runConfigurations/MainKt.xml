@@ -1,11 +1,7 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="MainKt" type="JetRunConfigurationType" nameIsGenerated="true">
-    <envs>
-      <env name="GDK_SCALE" value="2" />
-    </envs>
     <option name="MAIN_CLASS_NAME" value="MainKt" />
     <module name="demo.jvmMain" />
-    <option name="PROGRAM_PARAMETERS" value="-Dsun.java2d.uiScale=2.0" />
     <shortenClasspath name="NONE" />
     <method v="2">
       <option name="Make" enabled="true" />

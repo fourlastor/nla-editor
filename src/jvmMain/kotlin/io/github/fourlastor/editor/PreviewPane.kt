@@ -5,10 +5,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.PointerMatcher
 import androidx.compose.foundation.gestures.onDrag
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.Slider
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.FilterQuality
@@ -48,11 +45,11 @@ fun PreviewPane(
             }
         }
 
-        Slider(
-            value = zoom,
-            modifier = Modifier.align(Alignment.BottomEnd).fillMaxWidth(0.4f),
-            onValueChange = { zoom = it }
-        )
+//        Slider(
+//            value = zoom,
+//            modifier = Modifier.align(Alignment.BottomEnd).fillMaxWidth(0.4f),
+//            onValueChange = { zoom = it }
+//        )
     }
 }
 

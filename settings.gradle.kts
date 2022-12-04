@@ -12,5 +12,4 @@ pluginManagement {
     }
 }
 
-rootProject.name = "demo"
-
+rootProject.name = "nla-editor"
