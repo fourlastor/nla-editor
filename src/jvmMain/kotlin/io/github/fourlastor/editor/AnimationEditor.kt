@@ -4,9 +4,12 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.WindowPosition
+import androidx.compose.ui.window.rememberDialogState
 import androidx.compose.ui.zIndex
 import io.github.fourlastor.entity.*
 import io.kanro.compose.jetbrains.expui.style.LocalAreaColors
@@ -16,6 +19,7 @@ import io.kanro.compose.jetbrains.expui.style.areaBackground
 @Composable
 fun AnimationEditor() {
     var state by rememberEditorState()
+    var newParentId: Long? by remember { mutableStateOf(null) }
     Row(
         modifier = Modifier.fillMaxSize(),
     ) {
@@ -26,7 +30,7 @@ fun AnimationEditor() {
             verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
             PreviewPane(
-                state = state,
+                entities = state.entities,
                 modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxHeight(0.7f),
@@ -41,7 +45,7 @@ fun AnimationEditor() {
         }
         Spacer(Modifier.background(LocalAreaColors.current.startBorderColor).width(1.dp).fillMaxHeight())
         PropertiesPane(
-            state = state,
+            entities = state.entities,
             modifier = Modifier
                 .fillMaxSize()
                 .areaBackground()
@@ -49,27 +53,43 @@ fun AnimationEditor() {
             onEntityChange = {
                 val entities = state.entities.update(it)
                 state = state.copy(entities = entities)
+                newParentId = null
             },
-        )
+        ) { newParentId = it }
+    }
+    newParentId?.also {
+        Dialog(
+            onCloseRequest = { newParentId = null },
+            state = rememberDialogState(position = WindowPosition(Alignment.Center))
+        ) {
+            NewEntity(
+                parentId = it,
+                onAddGroup = { name, parentId ->
+                    state = state.group(parentId, name)
+                    newParentId = null
+                },
+                onAddImage = { name, path, parentId ->
+                    state = state.image(parentId, name, path)
+                    newParentId = null
+                },
+                onCancel = { newParentId = null }
+            )
+        }
     }
 }
 
 @Composable
-fun rememberEditorState() = remember {
+private fun rememberEditorState() = remember {
     mutableStateOf(
         EditorState(
-            entities = Entities()
-                .image(0, "Player big", "player.png")
-                .image(
-                    0,
-                    "Player small",
-                    "player.png",
-                    transform = Transform.IDENTITY.copy(rotation = 90f, offset = Offset(4f, 5f), scale = 0.4f)
-                ),
+            entities = Entities(),
         )
     )
 }
 
-data class EditorState(
+private data class EditorState(
     val entities: Entities,
-)
+) {
+    fun group(parent: Long, name: String) = copy(entities = entities.group(parent, name))
+    fun image(parent: Long, name: String, path: String) = copy(entities = entities.image(parent, name, path))
+}

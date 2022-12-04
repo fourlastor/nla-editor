@@ -15,21 +15,18 @@ import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.input.pointer.PointerButton
 import androidx.compose.ui.res.loadImageBitmap
-import androidx.compose.ui.res.useResource
 import androidx.compose.ui.unit.IntOffset
-import io.github.fourlastor.entity.EntityNode
-import io.github.fourlastor.entity.GroupNode
-import io.github.fourlastor.entity.ImageNode
-import io.github.fourlastor.entity.Transform
+import io.github.fourlastor.entity.*
+import java.io.File
 
 @ExperimentalFoundationApi
 @Composable
 fun PreviewPane(
-    state: EditorState,
+    entities: Entities,
     modifier: Modifier,
 ) {
     var pan by remember { mutableStateOf(Offset.Zero) }
-    val entityPreview by remember(state.entities) { derivedStateOf { toPreview(state.entities.asNode()) } }
+    val entityPreview by remember(entities) { derivedStateOf { toPreview(entities.asNode()) } }
     Box(
         modifier = modifier.onDrag(matcher = PointerMatcher.mouse(PointerButton.Secondary)) {
             pan += it
@@ -60,10 +57,13 @@ private fun toPreview(entity: EntityNode): EntityPreview = when (entity) {
     )
 
     is ImageNode -> ImagePreview(
-        image = useResource(entity.entity.path) { loadImageBitmap(it) },
+        image = loadImageFromPath(entity.entity.path),
         transform = entity.entity.transform,
     )
 }
+
+private fun loadImageFromPath(path: String): ImageBitmap =
+    File(path).inputStream().buffered().use(::loadImageBitmap)
 
 private sealed interface EntityPreview {
     fun draw(drawScope: DrawScope)

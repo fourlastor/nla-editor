@@ -21,12 +21,13 @@ import io.kanro.compose.jetbrains.expui.control.TextField
 
 @Composable
 fun PropertiesPane(
-    state: EditorState,
+    entities: Entities,
     modifier: Modifier,
     onEntityChange: (Entity) -> Unit,
+    onEntityAdd: (parentId: Long) -> Unit,
 ) {
     var selectedEntity by remember { mutableStateOf<EntityNode?>(null) }
-    val rootNode by remember(state.entities) { derivedStateOf { state.entities.asNode() } }
+    val rootNode by remember(entities) { derivedStateOf { entities.asNode() } }
 
     Column(
         modifier = modifier
@@ -48,6 +49,7 @@ fun PropertiesPane(
             PropertyEditor(
                 node = selected,
                 onEntityChange = onEntityChange,
+                onEntityAdd = onEntityAdd,
             )
         }
     }
@@ -112,13 +114,9 @@ private fun GroupNodeView(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Icon(
-                    resource = "icons/arrow.svg",
-                    modifier = Modifier
-                        .size(20.dp)
-                        .rotate(if (expanded) 90f else 0f)
-                        .clickable {
-                            expanded = !expanded
-                        },
+                    icon = "icons/arrow.svg",
+                    onClick = { expanded = !expanded },
+                    modifier = Modifier.rotate(if (expanded) 90f else 0f)
                 )
                 Label(group.entity.name)
             }
@@ -135,6 +133,15 @@ private fun GroupNodeView(
 }
 
 @Composable
+private fun Icon(icon: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Icon(
+        resource = icon,
+        modifier = modifier
+            .clickable(onClick = onClick),
+    )
+}
+
+@Composable
 private fun EntityNodeView(
     entity: EntityNode,
     selectedEntity: EntityNode?,
@@ -147,7 +154,7 @@ private fun EntityNodeView(
 }
 
 @Composable
-private fun PropertyEditor(node: EntityNode, onEntityChange: (Entity) -> Unit) {
+private fun PropertyEditor(node: EntityNode, onEntityChange: (Entity) -> Unit, onEntityAdd: (parentId: Long) -> Unit) {
     Column {
         val entity = node.entity
         Label(entity.name, fontSize = 12.sp)
@@ -157,10 +164,10 @@ private fun PropertyEditor(node: EntityNode, onEntityChange: (Entity) -> Unit) {
             onYChange = { onEntityChange(entity.y(it)) },
             onRotationChange = { onEntityChange(entity.rotation(it)) }
         )
-//        when (entity) {
-//            is Group -> GroupEditor(entity, onEntityChange)
-//            is Image -> ImageEditor(entity)
-//        }
+        when (node) {
+            is GroupNode -> GroupEditor(node, onEntityAdd)
+            is ImageNode -> ImageEditor(node)
+        }
     }
 }
 
@@ -198,20 +205,15 @@ private fun NumberField(value: Float, onValueChange: (Float) -> Unit, label: Str
 }
 
 @Composable
-private fun GroupEditor(group: GroupNode, onEntityChange: (Entity) -> Unit) = group.run {
+private fun GroupEditor(group: GroupNode, onEntityAdd: (parentId: Long) -> Unit) = group.run {
     Column(modifier = Modifier.padding(start = 12.dp)) {
-        group.children.forEach { entity ->
-            PropertyEditor(
-                node = entity,
-                onEntityChange = onEntityChange
-            )
-        }
+        Icon("icons/add.svg", onClick = { onEntityAdd(group.entity.id) })
     }
 }
 
 @Composable
 private fun ImageEditor(
-    @Suppress("UNUSED_PARAMETER") image: Image, // one day
+    @Suppress("UNUSED_PARAMETER") image: EntityNode, // one day
 ) {
     Label("TODO")
 }
