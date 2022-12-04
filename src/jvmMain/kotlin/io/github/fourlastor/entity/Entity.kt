@@ -8,6 +8,15 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
+/**
+ * An animation is composed of elements which have properties (such as position, rotation, scale).
+ * [Entity] is the base interface for this class, defining the base fields.
+ *
+ * [id] unique ID of this entity
+ * [parentId] id of the parent [Group] containing this entity, null if it's the root node.
+ * [transform] transform of this entity
+ * [name] human name for this entity
+ */
 @Serializable
 sealed interface Entity {
     fun x(x: Float): Entity
@@ -20,6 +29,10 @@ sealed interface Entity {
     val name: String
 }
 
+/**
+ * A [Group] is an [Entity] which only contains children entities.
+ * The children are associated by [parentId], see [Entities.asNode] for accessing them in a tree-like manner.
+ */
 @Serializable
 data class Group(
     override val id: Long,
@@ -35,6 +48,10 @@ data class Group(
     override fun rotation(rotation: Float) = copy(transform = transform.rotation(rotation))
 }
 
+/**
+ *  An [Entity] representing an image.
+ *  [path] absolute path to the image file.
+ */
 @Serializable
 data class Image(
     override val id: Long,
@@ -51,24 +68,27 @@ data class Image(
     override fun rotation(rotation: Float) = copy(transform = transform.rotation(rotation))
 }
 
+/**
+ * Represents the transform ([translation], [rotation], and [scale]) of an [Entity].
+ */
 @Serializable
 data class Transform(
     @Serializable(with = OffsetSerializer::class)
-    val offset: Offset,
+    val translation: Offset,
     val rotation: Float,
     val scale: Float,
     @Serializable(with = OffsetSerializer::class)
     val pivotOffset: Offset,
 ) {
-    fun x(x: Float) = copy(offset = offset.copy(x = x))
+    fun x(x: Float) = copy(translation = translation.copy(x = x))
 
-    fun y(y: Float) = copy(offset = offset.copy(y = y))
+    fun y(y: Float) = copy(translation = translation.copy(y = y))
 
     fun rotation(rotation: Float) = copy(rotation = rotation)
 
     companion object {
         val IDENTITY = Transform(
-            offset = Offset.Zero,
+            translation = Offset.Zero,
             rotation = 0f,
             scale = 1f,
             pivotOffset = Offset.Zero,
@@ -76,6 +96,7 @@ data class Transform(
     }
 }
 
+/** JSON serializer for [Offset]. Delegates to a surrogate class. */
 private object OffsetSerializer : KSerializer<Offset> {
     override val descriptor: SerialDescriptor
         get() = OffsetSurrogate.serializer().descriptor
@@ -92,6 +113,10 @@ private object OffsetSerializer : KSerializer<Offset> {
 
 }
 
+/**
+ * [Offset] JSON surrogate class.
+ * Used to generate a serializer usable with [Offset], which isn't @[Serializable]
+ */
 @Serializable
 @SerialName("Offset")
 private data class OffsetSurrogate(

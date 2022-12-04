@@ -13,6 +13,7 @@ import io.kanro.compose.jetbrains.expui.control.Icon
 import io.kanro.compose.jetbrains.expui.style.areaBackground
 import io.kanro.compose.jetbrains.expui.window.MainToolBarScope
 
+/** Toolbar on top of the editor, it contains save and load buttons. */
 @Composable
 fun MainToolBarScope.EditorToolbar(onLoad: () -> Unit, onSave: () -> Unit) {
     Row(

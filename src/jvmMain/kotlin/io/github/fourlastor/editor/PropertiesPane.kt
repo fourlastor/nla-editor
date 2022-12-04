@@ -19,6 +19,10 @@ import io.kanro.compose.jetbrains.expui.control.Icon
 import io.kanro.compose.jetbrains.expui.control.Label
 import io.kanro.compose.jetbrains.expui.control.TextField
 
+/**
+ * Property inspector panel.
+ * Displays a tree of entities, and when selected it shows the editable data for the selected entity in a form.
+ */
 @Composable
 fun PropertiesPane(
     entities: Entities,
@@ -55,6 +59,7 @@ fun PropertiesPane(
     }
 }
 
+/** Displays a tree of entities as collapsable elements. */
 @Composable
 private fun EntityTreeView(
     entity: EntityNode,
@@ -71,6 +76,7 @@ private fun EntityTreeView(
 
 val selectedColor = Color(0.3f, 0.5f, 0.8f)
 
+/** Used to make an element selectable. */
 @Composable
 private fun Selectable(
     selected: Boolean,
@@ -93,6 +99,9 @@ private fun Selectable(
 
 }
 
+/**
+ *  Displays a group, indenting the children entities before displaying them.
+ */
 @Composable
 private fun GroupNodeView(
     group: GroupNode,
@@ -114,9 +123,9 @@ private fun GroupNodeView(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Icon(
-                    icon = "icons/arrow.svg",
-                    onClick = { expanded = !expanded },
+                    resource = "icons/arrow.svg",
                     modifier = Modifier.rotate(if (expanded) 90f else 0f)
+                        .clickable(onClick = { expanded = !expanded }),
                 )
                 Label(group.entity.name)
             }
@@ -132,15 +141,9 @@ private fun GroupNodeView(
     }
 }
 
-@Composable
-private fun Icon(icon: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    Icon(
-        resource = icon,
-        modifier = modifier
-            .clickable(onClick = onClick),
-    )
-}
-
+/**
+ * Displays a leaf entity, showing a label with its name.
+ */
 @Composable
 private fun EntityNodeView(
     entity: EntityNode,
@@ -153,6 +156,7 @@ private fun EntityNodeView(
     }
 }
 
+/** Displays properties of an entity in a form. */
 @Composable
 private fun PropertyEditor(node: EntityNode, onEntityChange: (Entity) -> Unit, onEntityAdd: (parentId: Long) -> Unit) {
     Column {
@@ -171,6 +175,7 @@ private fun PropertyEditor(node: EntityNode, onEntityChange: (Entity) -> Unit, o
     }
 }
 
+/** Displays a form to edit an entity [Transform]. */
 @Composable
 private fun TransformEditor(
     transform: Transform,
@@ -179,8 +184,8 @@ private fun TransformEditor(
     onRotationChange: (Float) -> Unit,
 ) {
     Column {
-        NumberField(transform.offset.x, onXChange, "X")
-        NumberField(transform.offset.y, onYChange, "Y")
+        NumberField(transform.translation.x, onXChange, "X")
+        NumberField(transform.translation.y, onYChange, "Y")
         NumberField(transform.rotation, onRotationChange, "Rotation")
     }
 }
@@ -204,10 +209,15 @@ private fun NumberField(value: Float, onValueChange: (Float) -> Unit, label: Str
     }
 }
 
+/** Adds a + button when editing a group, to add a new entity to it. */
 @Composable
 private fun GroupEditor(group: GroupNode, onEntityAdd: (parentId: Long) -> Unit) = group.run {
     Column(modifier = Modifier.padding(start = 12.dp)) {
-        Icon("icons/add.svg", onClick = { onEntityAdd(group.entity.id) })
+        Icon(
+            resource = "icons/add.svg",
+            modifier = Modifier
+                .clickable(onClick = { onEntityAdd(group.entity.id) }),
+        )
     }
 }
 

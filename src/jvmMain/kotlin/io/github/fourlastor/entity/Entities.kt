@@ -2,6 +2,11 @@ package io.github.fourlastor.entity
 
 import kotlinx.serialization.Serializable
 
+/**
+ * A database of [Entity] objects.
+ * Can produce a tree-structure of them via [asNode].
+ * Keeps track of the last used id in [lastId].
+ */
 @Serializable
 data class Entities(
     val entities: List<Entity>,
@@ -27,10 +32,12 @@ data class Entities(
             }
         }
 
+    /** Updates the entity [entity] in the collection, matching by [Entity.id]. */
     fun update(entity: Entity): Entities = copy(
         entities = entities.map { if (it.id == entity.id) entity else it },
     )
 
+    /** Creates a new group, using the next available id. */
     fun group(
         parent: Long,
         name: String,
@@ -48,6 +55,7 @@ data class Entities(
         )
     }
 
+    /** Creates a new image, using the next available id. */
     fun image(
         parent: Long,
         name: String,
@@ -68,6 +76,8 @@ data class Entities(
     }
 
     companion object {
+
+        /** Initial empty state. */
         fun empty() = Entities(
             entities = emptyList(),
             lastId = 0,

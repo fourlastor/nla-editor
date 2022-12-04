@@ -11,6 +11,13 @@ import io.kanro.compose.jetbrains.expui.control.Label
 import io.kanro.compose.jetbrains.expui.control.TextField
 import io.kanro.compose.jetbrains.expui.style.areaBackground
 
+/**
+ * Popup to create a new entity.
+ * [parentId] id of the parent group to be attached to.
+ * [onAddGroup] callback to create a new group
+ * [onAddImage] callback to create a new image
+ * [onCancel] callback to cancel the operation
+ */
 @Composable
 fun NewEntity(
     parentId: Long,
@@ -19,6 +26,12 @@ fun NewEntity(
     onCancel: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    /**
+     * "Steps" in adding a new entity
+     * [ChoosingType] the user is choosing the type of entity (pick a type)
+     * [ChosenType.GROUP] the user wants to add a group (create a new group)
+     * [ChosenType.IMAGE] the user wants to add an image (create a new image)
+     */
     var state: State by remember { mutableStateOf(ChoosingType) }
     when (state) {
         is ChoosingType -> {

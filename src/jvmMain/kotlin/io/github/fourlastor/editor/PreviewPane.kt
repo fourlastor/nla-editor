@@ -20,6 +20,10 @@ import androidx.compose.ui.unit.IntOffset
 import io.github.fourlastor.entity.*
 import java.io.File
 
+/**
+ * Displays a preview of the current project.
+ * Displays the images in a canvas, and properly parents entities so that their parent transform applies to the children.
+ */
 @ExperimentalFoundationApi
 @Composable
 fun PreviewPane(
@@ -51,6 +55,7 @@ fun PreviewPane(
     }
 }
 
+/** Transforms [entity] to a version that can be displayed, loading images and so forth. */
 private fun toPreview(entity: EntityNode): EntityPreview = when (entity) {
     is GroupNode -> GroupPreview(
         entities = entity.children.map { toPreview(it) },
@@ -98,7 +103,7 @@ private data class ImagePreview(
 
 val Transform.action: DrawTransform.() -> Unit
     get() = {
-        translate(offset.x, offset.y)
+        translate(translation.x, translation.y)
         if (rotation != 0f) {
             rotate(rotation)
         }

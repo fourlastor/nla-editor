@@ -21,10 +21,20 @@ import kotlinx.serialization.json.Json
 import kotlin.system.exitProcess
 
 @Composable
+/**
+ * Main view, this displays a new window and holds the application state.
+ */
 fun ApplicationScope.AnimationEditor() {
+    /** `state` is the actual editor state, it contains a copy of [Entities]. */
     var state by rememberEditorState()
+
+    /** Local state, it's used to display or not the save popup. */
     var saveRequested by remember { mutableStateOf(false) }
+
+    /** Local state, it's used to display or not the load popup. */
     var loadRequested by remember { mutableStateOf(false) }
+
+    /** Local state. When this is set, a "new entity" popup is displayed. */
     var newParentId: Long? by remember { mutableStateOf(null) }
     JBWindow(
         title = "NLA Editor",
@@ -69,6 +79,13 @@ fun ApplicationScope.AnimationEditor() {
 
 }
 
+/**
+ *  Main UI for the editor, contains the [PreviewPane], [Timeline], and [PropertiesPane].
+ *  [entities] entities to display in the editor
+ *  [newParentId] state to display (or not) the "create new entity"
+ *  [onParentIdChange] callback used to request the creation of a new entity, by setting which group to parent it to
+ *  [onEntitiesChange] callback to update [entities]
+ */
 @Composable
 @OptIn(ExperimentalFoundationApi::class)
 private fun EditorUi(
