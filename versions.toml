@@ -1,0 +1,12 @@
+[versions]
+compose = "1.2.0"
+expui = "2.1.0"
+kotlin = "1.7.20"
+serializationJson = "1.3.3"
+[libraries]
+expui = { module = "com.bybutter.compose:compose-jetbrains-expui-theme", version.ref = "expui" }
+serializationJson = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serializationJson" }
+[plugins]
+compose = { id = "org.jetbrains.compose", version.ref = "compose" }
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

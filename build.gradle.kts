@@ -1,8 +1,12 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
-
+@Suppress(
+    // known false positive: https://youtrack.jetbrains.com/issue/KTIJ-19369
+    "DSL_SCOPE_VIOLATION"
+)
 plugins {
-    kotlin("multiplatform")
-    id("org.jetbrains.compose")
+    alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.compose)
 }
 
 group = "io.github.fourlastor"
@@ -28,7 +32,8 @@ kotlin {
                 implementation(compose.desktop.currentOs) {
                     exclude("org.jetbrains.compose.material")
                 }
-                implementation("com.bybutter.compose:compose-jetbrains-expui-theme:2.1.0")
+                implementation(libs.expui)
+                implementation(libs.serializationJson)
             }
         }
         val jvmTest by getting
