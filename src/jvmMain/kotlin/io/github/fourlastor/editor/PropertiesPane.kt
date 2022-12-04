@@ -14,10 +14,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import io.github.fourlastor.entity.Entity
-import io.github.fourlastor.entity.Group
-import io.github.fourlastor.entity.Image
-import io.github.fourlastor.entity.Transform
+import io.github.fourlastor.entity.*
 import io.kanro.compose.jetbrains.expui.control.Icon
 import io.kanro.compose.jetbrains.expui.control.Label
 import io.kanro.compose.jetbrains.expui.control.TextField
@@ -28,20 +25,21 @@ fun PropertiesPane(
     modifier: Modifier,
     onEntityChange: (Entity) -> Unit,
 ) {
-    var selectedEntity by remember { mutableStateOf<Entity?>(null) }
+    var selectedEntity by remember { mutableStateOf<EntityNode?>(null) }
+    val rootNode by remember { derivedStateOf { state.entities.asNode() } }
 
     Column(
         modifier = modifier
             .fillMaxSize()
             .padding(2.dp)
     ) {
-        EntityTree(
-            entity = state.entity,
+        EntityTreeView(
+            entity = rootNode,
             modifier = Modifier.fillMaxHeight(0.7f)
                 .verticalScroll(rememberScrollState())
                 .fillMaxWidth(),
             selectedEntity = selectedEntity,
-            onEntitySelected = { it: Entity ->
+            onEntitySelected = { it: EntityNode ->
                 selectedEntity = it
             },
         )
@@ -55,16 +53,16 @@ fun PropertiesPane(
 }
 
 @Composable
-private fun EntityTree(
-    entity: Entity,
-    selectedEntity: Entity?,
-    onEntitySelected: (Entity) -> Unit,
+private fun EntityTreeView(
+    entity: EntityNode,
+    selectedEntity: EntityNode?,
+    onEntitySelected: (EntityNode) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    if (entity is Group) {
-        GroupNode(entity, selectedEntity, onEntitySelected, modifier)
+    if (entity is GroupNode) {
+        GroupNodeView(entity, selectedEntity, onEntitySelected, modifier)
     } else {
-        EntityNode(entity, selectedEntity, onEntitySelected, modifier)
+        EntityNodeView(entity, selectedEntity, onEntitySelected, modifier)
     }
 }
 
@@ -93,10 +91,10 @@ private fun Selectable(
 }
 
 @Composable
-private fun GroupNode(
-    group: Group,
-    selectedEntity: Entity?,
-    onEntitySelected: (Entity) -> Unit,
+private fun GroupNodeView(
+    group: GroupNode,
+    selectedEntity: EntityNode?,
+    onEntitySelected: (EntityNode) -> Unit,
     modifier: Modifier,
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -121,7 +119,7 @@ private fun GroupNode(
                             expanded = !expanded
                         },
                 )
-                Label(group.name)
+                Label(group.entity.name)
             }
         }
         if (expanded) {
@@ -129,27 +127,28 @@ private fun GroupNode(
                 verticalArrangement = Arrangement.spacedBy(2.dp),
                 modifier = Modifier.padding(start = 24.dp).fillMaxWidth(),
             ) {
-                group.entities.forEach { EntityTree(it, selectedEntity, onEntitySelected, Modifier.fillMaxWidth()) }
+                group.children.forEach { EntityTreeView(it, selectedEntity, onEntitySelected, Modifier.fillMaxWidth()) }
             }
         }
     }
 }
 
 @Composable
-private fun EntityNode(
-    entity: Entity,
-    selectedEntity: Entity?,
-    onEntitySelected: (Entity) -> Unit,
+private fun EntityNodeView(
+    entity: EntityNode,
+    selectedEntity: EntityNode?,
+    onEntitySelected: (EntityNode) -> Unit,
     modifier: Modifier,
 ) {
     Selectable(selected = entity == selectedEntity, onSelected = { onEntitySelected(entity) }, modifier = modifier) {
-        Label(entity.name)
+        Label(entity.entity.name)
     }
 }
 
 @Composable
-private fun PropertyEditor(entity: Entity, onEntityChange: (Entity) -> Unit) {
+private fun PropertyEditor(node: EntityNode, onEntityChange: (Entity) -> Unit) {
     Column {
+        val entity = node.entity
         Label(entity.name, fontSize = 12.sp)
         TransformEditor(
             transform = entity.transform,
@@ -198,20 +197,20 @@ private fun NumberField(value: Float, onValueChange: (Float) -> Unit, label: Str
 }
 
 @Composable
-private fun GroupEditor(group: Group, onEntityChange: (Entity) -> Unit) = group.run {
+private fun GroupEditor(group: GroupNode, onEntityChange: (Entity) -> Unit) = group.run {
     Column(modifier = Modifier.padding(start = 12.dp)) {
-        entities.forEachIndexed { originalIndex, entity ->
+        group.children.forEachIndexed { originalIndex, entity ->
             PropertyEditor(
-                entity = entity, onEntityChange = {
-                    onEntityChange(group.copy(entities = group.entities.mapIndexed { i, e ->
-                        if (i == originalIndex) {
-                            it
-                        } else {
-                            e
-                        }
-                    }))
-                }
-            )
+                node = entity
+            ) {
+//                onEntityChange(group.copy(entities = group.entities.mapIndexed { i, e ->
+//                    if (i == originalIndex) {
+//                        it
+//                    } else {
+//                        e
+//                    }
+//                }))
+            }
         }
     }
 }

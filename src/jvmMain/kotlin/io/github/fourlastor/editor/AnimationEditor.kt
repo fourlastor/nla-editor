@@ -8,10 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import io.github.fourlastor.entity.Entity
-import io.github.fourlastor.entity.Group
-import io.github.fourlastor.entity.Image
-import io.github.fourlastor.entity.Transform
+import io.github.fourlastor.entity.*
 import io.kanro.compose.jetbrains.expui.style.LocalAreaColors
 import io.kanro.compose.jetbrains.expui.style.areaBackground
 
@@ -49,7 +46,7 @@ fun AnimationEditor() {
                 .fillMaxSize()
                 .areaBackground()
                 .zIndex(2f),
-            onEntityChange = { state = state.copy(entity = it) },
+            onEntityChange = { },
         )
     }
 }
@@ -58,21 +55,18 @@ fun AnimationEditor() {
 fun rememberEditorState() = remember {
     mutableStateOf(
         EditorState(
-            entity = Group(
-                entities = listOf(
-                    Image(
-                        path = "player.png",
-                    ),
-                    Image(
-                        path = "player.png",
-                        transform = Transform.IDENTITY.copy(rotation = 90f, offset = Offset(4f, 5f), scale = 0.4f),
-                    ),
-                )
-            ),
+            entities = Entities()
+                .image(0, "Player big", "player.png")
+                .image(
+                    0,
+                    "Player small",
+                    "player.png",
+                    transform = Transform.IDENTITY.copy(rotation = 90f, offset = Offset(4f, 5f), scale = 0.4f)
+                ),
         )
     )
 }
 
 data class EditorState(
-    val entity: Entity,
+    val entities: Entities,
 )

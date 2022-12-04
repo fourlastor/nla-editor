@@ -9,11 +9,15 @@ sealed interface Entity {
     fun y(y: Float): Entity
     fun rotation(rotation: Float): Entity
 
+    val id: Long
+    val parentId: Long?
     val transform: Transform
     val name: String
 }
 
 data class Group(
+    override val id: Long,
+    override val parentId: Long?,
     val entities: List<Entity>,
     override val name: String = "Group(${entities.size})",
     override val transform: Transform = Transform.IDENTITY,
@@ -27,6 +31,8 @@ data class Group(
 }
 
 data class Image(
+    override val id: Long,
+    override val parentId: Long?,
     val path: String,
     override val name: String = "Image",
     override val transform: Transform = Transform.IDENTITY,
