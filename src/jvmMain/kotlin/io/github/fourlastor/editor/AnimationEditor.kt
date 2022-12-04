@@ -2,6 +2,7 @@ package io.github.fourlastor.editor
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.onDrag
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -94,42 +95,81 @@ private fun EditorUi(
     onParentIdChange: (parentId: Long?) -> Unit,
     onEntitiesChange: (Entities) -> Unit,
 ) {
-    Row(
-        modifier = Modifier.fillMaxSize(),
+    BoxWithConstraints(
+        modifier = Modifier.fillMaxSize()
     ) {
+        var horizontalCutPoint by remember { mutableStateOf(0.5f) }
+        var verticalCutPoint by remember { mutableStateOf(0.7f) }
+        val width = constraints.maxWidth
+        val height = constraints.maxHeight
         Column(
-            modifier = Modifier
-                .fillMaxWidth(0.8f)
-                .fillMaxHeight(),
-            verticalArrangement = Arrangement.spacedBy(2.dp)
+            modifier = Modifier.matchParentSize()
         ) {
-            PreviewPane(
-                entities = entities,
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .fillMaxHeight(0.7f),
+                    .fillMaxHeight(horizontalCutPoint)
+            ) {
+                PreviewPane(
+                    entities = entities,
+                    modifier = Modifier
+                        .fillMaxWidth(verticalCutPoint),
+                )
+                Spacer(
+                    modifier = Modifier
+                        .background(LocalAreaColors.current.startBorderColor)
+                        .width(4.dp)
+                        .fillMaxHeight()
+                        .onDrag { verticalCutPoint += it.x / width }
+                )
+                PropertiesPane(
+                    entities = entities,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .areaBackground()
+                        .zIndex(2f),
+                    onEntityChange = {
+                        onEntitiesChange(entities.update(it))
+                        onParentIdChange(null)
+                    },
+                    onEntityAdd = onParentIdChange,
+                )
+            }
+            Spacer(Modifier
+                .background(LocalAreaColors.current.startBorderColor)
+                .height(4.dp)
+                .fillMaxWidth()
+                .onDrag { horizontalCutPoint += it.y / height }
             )
-            Spacer(Modifier.background(LocalAreaColors.current.startBorderColor).height(1.dp).fillMaxWidth())
-            Timeline(
+            Row(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .areaBackground()
-                    .zIndex(2f),
-            )
+                    .fillMaxWidth()
+                    .fillMaxHeight()
+            ) {
+                Timeline(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .fillMaxWidth(verticalCutPoint)
+                        .areaBackground()
+                        .zIndex(2f),
+                )
+                Spacer(
+                    modifier = Modifier
+                        .background(LocalAreaColors.current.startBorderColor)
+                        .width(4.dp)
+                        .fillMaxHeight()
+                        .onDrag { verticalCutPoint += it.x / width }
+                )
+                // Keyframes properties list - to sync with the timeline
+                Box(
+                    modifier = Modifier.fillMaxHeight()
+                        .fillMaxWidth()
+                        .areaBackground()
+                ) {
+
+                }
+            }
         }
-        Spacer(Modifier.background(LocalAreaColors.current.startBorderColor).width(1.dp).fillMaxHeight())
-        PropertiesPane(
-            entities = entities,
-            modifier = Modifier
-                .fillMaxSize()
-                .areaBackground()
-                .zIndex(2f),
-            onEntityChange = {
-                onEntitiesChange(entities.update(it))
-                onParentIdChange(null)
-            },
-            onEntityAdd = onParentIdChange,
-        )
     }
     newParentId?.also {
         Dialog(
