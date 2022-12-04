@@ -11,6 +11,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.DrawTransform
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.input.pointer.PointerButton
@@ -93,6 +94,16 @@ private data class ImagePreview(
         )
     }
 }
+
+
+val Transform.action: DrawTransform.() -> Unit
+    get() = {
+        translate(offset.x, offset.y)
+        if (rotation != 0f) {
+            rotate(rotation)
+        }
+        scale(scale)
+    }
 
 private val DrawScope.intCenter: IntOffset
     get() = IntOffset(center.x.toInt(), center.y.toInt())

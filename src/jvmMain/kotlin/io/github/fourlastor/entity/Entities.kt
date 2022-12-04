@@ -1,15 +1,13 @@
 package io.github.fourlastor.entity
 
-data class Entities(
-    val entities: List<Entity> = emptyList(),
-    val lastId: Long = 0,
-) {
-    private val root = Group(
-        0,
-        null,
-        "Root",
-    )
+import kotlinx.serialization.Serializable
 
+@Serializable
+data class Entities(
+    val entities: List<Entity>,
+    val lastId: Long,
+    val root: Group,
+) {
     fun asNode(): EntityNode = root.asNode()
 
     private fun Group.asNode() = GroupNode(
@@ -66,6 +64,19 @@ data class Entities(
                 transform = transform,
                 path = path,
             ),
+        )
+    }
+
+    companion object {
+        fun empty() = Entities(
+            entities = emptyList(),
+            lastId = 0,
+            root = Group(
+                0,
+                null,
+                "Root",
+                Transform.IDENTITY,
+            )
         )
     }
 }

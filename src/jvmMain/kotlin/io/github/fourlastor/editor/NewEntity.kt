@@ -5,7 +5,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import io.github.fourlastor.system.FileDialog
+import io.github.fourlastor.system.FileLoadDialog
 import io.kanro.compose.jetbrains.expui.control.ActionButton
 import io.kanro.compose.jetbrains.expui.control.Label
 import io.kanro.compose.jetbrains.expui.control.TextField
@@ -67,10 +67,10 @@ fun NewEntity(
         }
 
         ChosenType.IMAGE -> {
-            FileDialog(onCloseRequest = {
+            FileLoadDialog(onCloseRequest = {
                 if (it == null) {
                     onCancel()
-                    return@FileDialog
+                    return@FileLoadDialog
                 }
 
                 onAddImage("Image", it.absolutePath, parentId)
