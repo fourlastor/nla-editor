@@ -11,11 +11,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import io.github.fourlastor.entity.*
+import io.github.fourlastor.entity.Entities
+import io.github.fourlastor.entity.Entity
+import io.github.fourlastor.entity.EntityNode
+import io.github.fourlastor.entity.GroupNode
 import io.kanro.compose.jetbrains.expui.control.Icon
 import io.kanro.compose.jetbrains.expui.control.Label
 import io.kanro.compose.jetbrains.expui.control.TextField
@@ -29,7 +33,7 @@ fun LayersPane(
     entities: Entities,
     modifier: Modifier,
     onEntityChange: (Entity) -> Unit,
-    onEntityAdd: (parentId: Long) -> Unit,
+    @Suppress("UNUSED_PARAMETER") onEntityAdd: (parentId: Long) -> Unit,
 ) {
     var selectedEntity by remember { mutableStateOf<EntityNode?>(null) }
     val rootNode by remember(entities) { derivedStateOf { entities.asNode() } }
@@ -148,9 +152,9 @@ private fun EntityNodeView(
     modifier: Modifier,
     onEntityChange: (Entity) -> Unit,
 ) {
-    var text by remember(entity.entity.name) { mutableStateOf(entity.entity.name.toString()) }
-    var selected = entity == selectedEntity;
+    val selected = entity == selectedEntity
     Selectable(selected = selected, onSelected = { onEntitySelected(entity) }, modifier = modifier) {
+        var text by remember(entity.entity.name) { mutableStateOf(entity.entity.name) }
         when (selected) {
             true -> TextField(
                 value = text,
@@ -158,14 +162,19 @@ private fun EntityNodeView(
                     text = it
                 },
                 modifier = Modifier
-                    .padding(2.dp),
+                    .padding(2.dp)
+                    .onFocusChanged {
+                        if (!it.hasFocus) {
+                            onEntityChange(entity.entity.name(text))
+                        }
+                    },
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Number,
                     imeAction = ImeAction.Done
                 ),
             )
+
             else -> {
-                onEntityChange(entity.entity.name(text));
                 Label(entity.entity.name)
             }
         }
