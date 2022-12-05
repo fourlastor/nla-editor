@@ -81,7 +81,7 @@ private fun Selectable(
     selected: Boolean,
     onSelected: () -> Unit,
     modifier: Modifier = Modifier,
-    content: @Composable BoxScope.() -> Unit,
+    content: @Composable BoxScope.(selected: Boolean) -> Unit,
 ) {
     val bgColor = if (selected) {
         selectedColor
@@ -93,7 +93,7 @@ private fun Selectable(
                 onClick = onSelected,
             )
             .background(bgColor),
-        content = content,
+        content = { content(selected) },
     )
 
 }
@@ -152,31 +152,31 @@ private fun EntityNodeView(
     modifier: Modifier,
     onEntityChange: (Entity) -> Unit,
 ) {
-    val selected = entity == selectedEntity
-    Selectable(selected = selected, onSelected = { onEntitySelected(entity) }, modifier = modifier) {
+    Selectable(
+        selected = entity == selectedEntity,
+        onSelected = { onEntitySelected(entity) },
+        modifier = modifier
+    ) { selected ->
         var text by remember(entity.entity.name) { mutableStateOf(entity.entity.name) }
-        when (selected) {
-            true -> TextField(
-                value = text,
-                onValueChange = {
-                    text = it
+        if (selected) TextField(
+            value = text,
+            onValueChange = {
+                text = it
+            },
+            modifier = Modifier
+                .padding(2.dp)
+                .onFocusChanged {
+                    if (!it.hasFocus) {
+                        onEntityChange(entity.entity.name(text))
+                    }
                 },
-                modifier = Modifier
-                    .padding(2.dp)
-                    .onFocusChanged {
-                        if (!it.hasFocus) {
-                            onEntityChange(entity.entity.name(text))
-                        }
-                    },
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Number,
-                    imeAction = ImeAction.Done
-                ),
-            )
-
-            else -> {
-                Label(entity.entity.name)
-            }
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Number,
+                imeAction = ImeAction.Done
+            ),
+        )
+        else {
+            Label(entity.entity.name)
         }
     }
 }
