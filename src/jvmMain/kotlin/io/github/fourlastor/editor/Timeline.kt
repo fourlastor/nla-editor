@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.pointer.PointerButton
 import androidx.compose.ui.layout.*
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import io.github.fourlastor.entity.Entities
 import io.kanro.compose.jetbrains.expui.control.Icon
@@ -113,25 +114,14 @@ fun Timeline(
                                     .height(40.dp),
                             )
                             repeat(3) { index ->
-                                Box(
+                                FrameTrack(
+                                    duration = duration,
                                     modifier = Modifier.fillMaxWidth()
-                                        .height(40.dp)
-                                        .background(DarkTheme.Grey1),
                                 ) {
-                                    val location = 1000.milliseconds
-                                    Icon(
-                                        "icons/diamond.svg",
+                                    val location = 1000.milliseconds * index
+                                    KeyFrame(
                                         modifier = Modifier
-                                            .size(20.dp)
-                                            .layout { measurable, constraints ->
-                                                val measured = measurable.measure(constraints)
-                                                val bias = (location * index / duration).toFloat()
-                                                val offsetX = (trackWidth.toPx() * bias).roundToInt()
-                                                layout(measured.width, measured.height) {
-                                                    measured.placeRelative(-measured.width / 2 + offsetX, 0)
-                                                }
-                                            },
-                                        colorFilter = ColorFilter.tint(Color(0xFF9c3aef))
+                                            .position(location)
                                     )
                                 }
                             }
@@ -141,4 +131,70 @@ fun Timeline(
             }
         }
     }
+}
+
+@Composable
+private fun FrameTrack(
+    duration: Duration,
+    modifier: Modifier = Modifier,
+    content: @Composable AdvancementTrackScope.() -> Unit,
+) {
+    val scope = remember(duration) {
+        object : AdvancementTrackScope {
+            override val total: Duration
+                get() = duration
+
+        }
+    }
+    Layout(
+        content = { scope.content() },
+        modifier = modifier
+            .height(40.dp)
+            .background(DarkTheme.Grey1)
+    ) { measurables, constraints ->
+        val offsetY = constraints.maxHeight / 2
+        val placeables = measurables.map { it.measure(constraints) to it.parentData as AdvancementParentData }
+        layout(constraints.maxWidth, constraints.maxHeight) {
+            fun Placeable.placeCenter(x: Int, y: Int) = place(
+                -width / 2 + x,
+                -height / 2 + y,
+            )
+
+            placeables.forEach { (placeable, data) ->
+                val offsetX = (constraints.maxWidth * data.bias).roundToInt()
+                placeable.placeCenter(offsetX, offsetY)
+            }
+        }
+    }
+}
+
+@Composable
+private fun KeyFrame(
+    modifier: Modifier,
+) {
+    Icon(
+        "icons/diamond.svg",
+        modifier = modifier
+            .size(20.dp),
+        colorFilter = ColorFilter.tint(Color(0xFF9c3aef))
+    )
+}
+
+@LayoutScopeMarker
+@Immutable
+interface AdvancementTrackScope {
+
+    val total: Duration
+
+    @Stable
+    fun Modifier.position(position: Duration) = then(
+        AdvancementParentData(
+            bias = (position / total).toFloat()
+        )
+    )
+}
+
+private class AdvancementParentData(val bias: Float) : ParentDataModifier {
+    override fun Density.modifyParentData(parentData: Any?): Any = this@AdvancementParentData
+
 }
