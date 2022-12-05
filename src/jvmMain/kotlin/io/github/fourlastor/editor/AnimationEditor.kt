@@ -2,11 +2,15 @@ package io.github.fourlastor.editor
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.onDrag
+import androidx.compose.foundation.gestures.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.PointerIcon
+import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.*
@@ -18,7 +22,10 @@ import io.kanro.compose.jetbrains.expui.style.LocalAreaColors
 import io.kanro.compose.jetbrains.expui.style.areaBackground
 import io.kanro.compose.jetbrains.expui.theme.DarkTheme
 import io.kanro.compose.jetbrains.expui.window.JBWindow
+import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
+import org.jetbrains.skiko.Cursor
+import java.io.File
 import kotlin.system.exitProcess
 
 @Composable
@@ -62,7 +69,11 @@ fun ApplicationScope.AnimationEditor() {
     if (loadRequested) {
         FileLoadDialog {
             if (it != null) {
-                // load
+                val entities = Json.decodeFromString(
+                    Entities.serializer(),
+                    it.readText()
+                )
+                println(entities)
             }
             loadRequested = false
         }
@@ -115,13 +126,7 @@ private fun EditorUi(
                     modifier = Modifier
                         .fillMaxWidth(verticalCutPoint),
                 )
-                Spacer(
-                    modifier = Modifier
-                        .background(LocalAreaColors.current.startBorderColor)
-                        .width(4.dp)
-                        .fillMaxHeight()
-                        .onDrag { verticalCutPoint += it.x / width }
-                )
+                ResizeHandle(Orientation.Vertical) { verticalCutPoint += it.x / width }
                 LayersPane(
                     entities = entities,
                     modifier = Modifier
@@ -135,39 +140,40 @@ private fun EditorUi(
                     onEntityAdd = onParentIdChange,
                 )
             }
-            Spacer(Modifier
-                .background(LocalAreaColors.current.startBorderColor)
-                .height(4.dp)
-                .fillMaxWidth()
-                .onDrag { horizontalCutPoint += it.y / height }
-            )
+            ResizeHandle(Orientation.Horizontal) { horizontalCutPoint += it.y / height }
+            val propertyKeysListState = rememberLazyListState()
+            val propertyNamesListState = rememberLazyListState()
+            val scope = rememberCoroutineScope()
+            val scrollState = rememberScrollableState { delta ->
+                scope.launch {
+                    propertyKeysListState.scrollBy(-delta)
+                    propertyNamesListState.scrollBy(-delta)
+                }
+                delta
+            }
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxHeight()
+                    .scrollable(scrollState, orientation = Orientation.Vertical)
             ) {
                 Timeline(
+                    entities = entities,
+                    propertyListState = propertyKeysListState,
                     modifier = Modifier
                         .fillMaxHeight()
                         .fillMaxWidth(verticalCutPoint)
+                        .padding(start = 4.dp)
                         .areaBackground()
                         .zIndex(2f),
                 )
-                Spacer(
-                    modifier = Modifier
-                        .background(LocalAreaColors.current.startBorderColor)
-                        .width(4.dp)
-                        .fillMaxHeight()
-                        .onDrag { verticalCutPoint += it.x / width }
+                ResizeHandle(Orientation.Vertical) { verticalCutPoint += it.x / width }
+                PropertiesPane(
+                    propertyNamesListState = propertyNamesListState,
+                    entities = entities,
+                    modifier = Modifier.padding(end = 4.dp),
+                    onEntityChange = { onEntitiesChange(entities.update(it)) }
                 )
-                // Keyframes properties list - to sync with the timeline
-                Box(
-                    modifier = Modifier.fillMaxHeight()
-                        .fillMaxWidth()
-                        .areaBackground()
-                ) {
-
-                }
             }
         }
     }
@@ -190,6 +196,27 @@ private fun EditorUi(
             )
         }
     }
+}
+
+val horizontalResize = PointerIcon(Cursor(Cursor.N_RESIZE_CURSOR))
+val verticalResize = PointerIcon(Cursor(Cursor.W_RESIZE_CURSOR))
+
+@Composable
+@OptIn(ExperimentalFoundationApi::class)
+private fun ResizeHandle(orientation: Orientation, onResize: (Offset) -> Unit) {
+    Spacer(
+        modifier = Modifier
+            .background(LocalAreaColors.current.startBorderColor)
+            .run {
+                if (orientation == Orientation.Vertical) {
+                    width(4.dp).fillMaxHeight()
+                } else {
+                    height(4.dp).fillMaxWidth()
+                }
+            }
+            .pointerHoverIcon(if (orientation == Orientation.Vertical) verticalResize else horizontalResize)
+            .onDrag(onDrag = onResize)
+    )
 }
 
 @Composable
