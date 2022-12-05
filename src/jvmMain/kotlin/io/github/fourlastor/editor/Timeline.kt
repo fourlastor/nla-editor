@@ -1,6 +1,7 @@
 package io.github.fourlastor.editor
 
 import androidx.compose.foundation.*
+import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.onDrag
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -14,6 +15,7 @@ import androidx.compose.ui.input.pointer.PointerButton
 import androidx.compose.ui.layout.*
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import io.github.fourlastor.entity.Entities
 import io.kanro.compose.jetbrains.expui.control.Icon
 import io.kanro.compose.jetbrains.expui.control.Label
@@ -36,6 +38,7 @@ fun Timeline(
     val secondWidth = 300.dp
     val horizontalScrollState = rememberScrollState(0)
     val coroutineScope = rememberCoroutineScope()
+    val trackWidth = secondWidth * duration.inWholeMilliseconds.toInt() / 1000
 
     Column(modifier = modifier) {
         HorizontalScrollbar(
@@ -45,83 +48,106 @@ fun Timeline(
             adapter = rememberScrollbarAdapter(horizontalScrollState)
         )
         BoxWithConstraints(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(horizontalScrollState)
-                .onDrag(matcher = PointerMatcher.mouse(PointerButton.Tertiary)) {
-                    coroutineScope.launch {
-                        horizontalScrollState.scrollTo((horizontalScrollState.value - it.x).toInt())
-                    }
-                }
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Column(modifier = Modifier.fillMaxSize()) {
-                Box {
-                    Row {
-                        repeat(duration.inWholeSeconds.toInt()) { counter ->
-                            Box(
-                                modifier = Modifier.width(secondWidth)
-                                    .height(40.dp)
-                                    .padding(2.dp)
-                            ) {
-                                Label(counter.toString())
-                            }
+            val maxWidthDp = maxWidth
+            val maxWidthPx = constraints.maxWidth
+            val density = maxWidthPx / maxWidthDp.value
+            val trackWidthPx = trackWidth.value * density
+            BoxWithConstraints(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(horizontalScrollState)
+                    .onDrag(matcher = PointerMatcher.mouse(PointerButton.Tertiary)) {
+                        coroutineScope.launch {
+                            horizontalScrollState.scrollTo((horizontalScrollState.value - it.x).toInt())
                         }
                     }
-                    val color = LocalAreaColors.current.text
-                    Canvas(modifier = Modifier.fillMaxWidth().height(50.dp)) {
-                        val secondOffset = secondWidth.toPx()
-                        for (s in 0 until duration.inWholeSeconds) {
-                            val xOffset = s * secondOffset
-                            drawLine(
-                                color = color,
-                                start = Offset(xOffset, 0f),
-                                end = Offset(xOffset, 50f),
-                                strokeWidth = 2f,
-                            )
-
-                            for (ms in 1 until 10) {
-                                val msOffset = ms / 10f * secondOffset
+            ) {
+                Row(
+                    modifier = Modifier
+                        .width(trackWidth)
+                        .zIndex(2f)
+                ) {
+                    var scrubberOffset by remember { mutableStateOf(0f) }
+                    Spacer(modifier = Modifier.fillMaxWidth(scrubberOffset))
+                    DraggableHandle(
+                        orientation = Orientation.Vertical,
+                        color = Color.Red,
+                        size = 2.dp
+                    ) {
+                        val delta = it.x / trackWidthPx
+                        scrubberOffset += delta
+                    }
+                }
+                Column(modifier = Modifier.fillMaxSize()) {
+                    Box {
+                        Row {
+                            repeat(duration.inWholeSeconds.toInt()) { counter ->
+                                Box(
+                                    modifier = Modifier.width(secondWidth)
+                                        .height(40.dp)
+                                        .padding(2.dp)
+                                ) {
+                                    Label(counter.toString())
+                                }
+                            }
+                        }
+                        val color = LocalAreaColors.current.text
+                        Canvas(modifier = Modifier.fillMaxWidth().height(50.dp)) {
+                            val secondOffset = secondWidth.toPx()
+                            for (s in 0 until duration.inWholeSeconds) {
+                                val xOffset = s * secondOffset
                                 drawLine(
                                     color = color,
-                                    start = Offset(xOffset + msOffset, 0f),
-                                    end = Offset(xOffset + msOffset, 15f),
-                                    strokeWidth = 1f,
+                                    start = Offset(xOffset, 0f),
+                                    end = Offset(xOffset, 50f),
+                                    strokeWidth = 2f,
                                 )
+
+                                for (ms in 1 until 10) {
+                                    val msOffset = ms / 10f * secondOffset
+                                    drawLine(
+                                        color = color,
+                                        start = Offset(xOffset + msOffset, 0f),
+                                        end = Offset(xOffset + msOffset, 15f),
+                                        strokeWidth = 1f,
+                                    )
+                                }
                             }
                         }
                     }
-                }
-                val trackWidth = secondWidth * duration.inWholeMilliseconds.toInt() / 1000
-                LazyColumn(
-                    modifier = Modifier.width(trackWidth)
-                        .padding(vertical = 4.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                    state = propertyListState,
-                    userScrollEnabled = false,
-                ) {
-                    items(
-                        count = entities.entities.size,
-                        key = { entities.entities[it].id }
+                    LazyColumn(
+                        modifier = Modifier.width(trackWidth)
+                            .padding(vertical = 4.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                        state = propertyListState,
+                        userScrollEnabled = false,
                     ) {
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(2.dp)
+                        items(
+                            count = entities.entities.size,
+                            key = { entities.entities[it].id }
                         ) {
-                            Spacer(
-                                modifier = Modifier.fillMaxWidth()
-                                    .height(40.dp),
-                            )
-                            // this should be 1 track per property in the entity
-                            // 3 works because we have x,y,rotation
-                            repeat(3) { index ->
-                                FrameTrack(
-                                    duration = duration,
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(2.dp)
+                            ) {
+                                Spacer(
                                     modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    val location = 1000.milliseconds * index
-                                    KeyFrame(
-                                        modifier = Modifier
-                                            .position(location)
-                                    )
+                                        .height(40.dp),
+                                )
+                                // this should be 1 track per property in the entity
+                                // 3 works because we have x,y,rotation
+                                repeat(3) { index ->
+                                    FrameTrack(
+                                        duration = duration,
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        val location = 1000.milliseconds * index
+                                        KeyFrame(
+                                            modifier = Modifier
+                                                .position(location)
+                                        )
+                                    }
                                 }
                             }
                         }

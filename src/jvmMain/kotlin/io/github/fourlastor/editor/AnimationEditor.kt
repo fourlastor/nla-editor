@@ -1,16 +1,13 @@
 package io.github.fourlastor.editor
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerIcon
-import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.*
@@ -126,7 +123,7 @@ private fun EditorUi(
                     modifier = Modifier
                         .fillMaxWidth(verticalCutPoint),
                 )
-                ResizeHandle(Orientation.Vertical) { verticalCutPoint += it.x / width }
+                DraggableHandle(Orientation.Vertical) { verticalCutPoint += it.x / width }
                 LayersPane(
                     entities = entities,
                     modifier = Modifier
@@ -140,7 +137,10 @@ private fun EditorUi(
                     onEntityAdd = onParentIdChange,
                 )
             }
-            ResizeHandle(Orientation.Horizontal) { horizontalCutPoint += it.y / height }
+            DraggableHandle(
+                Orientation.Horizontal,
+                color = LocalAreaColors.current.startBorderColor
+            ) { horizontalCutPoint += it.y / height }
             val propertyKeysListState = rememberLazyListState()
             val propertyNamesListState = rememberLazyListState()
             val scope = rememberCoroutineScope()
@@ -167,7 +167,7 @@ private fun EditorUi(
                         .areaBackground()
                         .zIndex(2f),
                 )
-                ResizeHandle(Orientation.Vertical) { verticalCutPoint += it.x / width }
+                DraggableHandle(Orientation.Vertical) { verticalCutPoint += it.x / width }
                 PropertiesPane(
                     propertyNamesListState = propertyNamesListState,
                     entities = entities,
@@ -200,24 +200,6 @@ private fun EditorUi(
 
 val horizontalResize = PointerIcon(Cursor(Cursor.N_RESIZE_CURSOR))
 val verticalResize = PointerIcon(Cursor(Cursor.W_RESIZE_CURSOR))
-
-@Composable
-@OptIn(ExperimentalFoundationApi::class)
-private fun ResizeHandle(orientation: Orientation, onResize: (Offset) -> Unit) {
-    Spacer(
-        modifier = Modifier
-            .background(LocalAreaColors.current.startBorderColor)
-            .run {
-                if (orientation == Orientation.Vertical) {
-                    width(4.dp).fillMaxHeight()
-                } else {
-                    height(4.dp).fillMaxWidth()
-                }
-            }
-            .pointerHoverIcon(if (orientation == Orientation.Vertical) verticalResize else horizontalResize)
-            .onDrag(onDrag = onResize)
-    )
-}
 
 @Composable
 private fun rememberEditorState() = remember {
