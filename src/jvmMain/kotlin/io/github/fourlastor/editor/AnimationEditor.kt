@@ -168,7 +168,7 @@ private fun EditorUi(
                         .zIndex(2f),
                 )
                 ResizeHandle(Orientation.Vertical) { verticalCutPoint += it.x / width }
-                KeyFramesValues(
+                PropertiesPane(
                     propertyNamesListState = propertyNamesListState,
                     entities = entities,
                     modifier = Modifier.padding(end = 4.dp),
