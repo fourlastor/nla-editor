@@ -22,6 +22,7 @@ sealed interface Entity {
     fun x(x: Float): Entity
     fun y(y: Float): Entity
     fun rotation(rotation: Float): Entity
+    fun name(name: String): Entity
 
     val id: Long
     val parentId: Long?
@@ -46,6 +47,8 @@ data class Group(
     override fun y(y: Float) = copy(transform = transform.y(y))
 
     override fun rotation(rotation: Float) = copy(transform = transform.rotation(rotation))
+
+    override fun name(name: String) = copy(name = name)
 }
 
 /**
@@ -66,6 +69,8 @@ data class Image(
     override fun y(y: Float) = copy(transform = transform.y(y))
 
     override fun rotation(rotation: Float) = copy(transform = transform.rotation(rotation))
+
+    override fun name(name: String) = copy(name = name)
 }
 
 /**
