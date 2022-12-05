@@ -6,17 +6,22 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.pointer.PointerButton
+import androidx.compose.ui.layout.*
 import androidx.compose.ui.unit.dp
 import io.github.fourlastor.entity.Entities
+import io.kanro.compose.jetbrains.expui.control.Icon
 import io.kanro.compose.jetbrains.expui.control.Label
 import io.kanro.compose.jetbrains.expui.style.LocalAreaColors
+import io.kanro.compose.jetbrains.expui.theme.DarkTheme
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -100,25 +105,34 @@ fun Timeline(
                         count = entities.entities.size,
                         key = { entities.entities[it].id }
                     ) {
-                        val entity = entities.entities[it]
                         Column(
                             verticalArrangement = Arrangement.spacedBy(2.dp)
                         ) {
-                            Box(
+                            Spacer(
                                 modifier = Modifier.fillMaxWidth()
-                                    .height(40.dp)
-                                    .background(Color.LightGray),
-                                contentAlignment = Alignment.BottomStart,
-                            ) {
-                                Label(entity.name, color = Color.Black)
-                            }
-                            repeat(3) {
-                                Row(
+                                    .height(40.dp),
+                            )
+                            repeat(3) { index ->
+                                Box(
                                     modifier = Modifier.fillMaxWidth()
                                         .height(40.dp)
-                                        .background(Color.LightGray),
-                                    horizontalArrangement = Arrangement.spacedBy(2.dp)
+                                        .background(DarkTheme.Grey1),
                                 ) {
+                                    val location = 1000.milliseconds
+                                    Icon(
+                                        "icons/diamond.svg",
+                                        modifier = Modifier
+                                            .size(20.dp)
+                                            .layout { measurable, constraints ->
+                                                val measured = measurable.measure(constraints)
+                                                val bias = (location * index / duration).toFloat()
+                                                val offsetX = (trackWidth.toPx() * bias).roundToInt()
+                                                layout(measured.width, measured.height) {
+                                                    measured.placeRelative(-measured.width / 2 + offsetX, 0)
+                                                }
+                                            },
+                                        colorFilter = ColorFilter.tint(Color(0xFF9c3aef))
+                                    )
                                 }
                             }
                         }
@@ -127,5 +141,4 @@ fun Timeline(
             }
         }
     }
-
 }

@@ -177,7 +177,7 @@ private fun EditorUi(
                         .fillMaxHeight()
                         .onDrag { verticalCutPoint += it.x / width }
                 )
-                KeyFramesNames(
+                KeyFramesValues(
                     propertyNamesListState = propertyNamesListState,
                     entities = entities,
                     modifier = Modifier.padding(end = 4.dp),

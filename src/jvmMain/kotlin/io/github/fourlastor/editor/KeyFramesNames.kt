@@ -7,14 +7,18 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import io.github.fourlastor.entity.Entities
+import io.github.fourlastor.entity.Entity
 import io.kanro.compose.jetbrains.expui.control.Label
+import io.kanro.compose.jetbrains.expui.control.TextField
 import io.kanro.compose.jetbrains.expui.style.areaBackground
+import io.kanro.compose.jetbrains.expui.theme.DarkTheme
 
 @Composable
-fun KeyFramesNames(
+fun KeyFramesValues(
     propertyNamesListState: LazyListState,
     entities: Entities,
     modifier: Modifier = Modifier,
@@ -43,25 +47,43 @@ fun KeyFramesNames(
                 Column(
                     verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
-                    Box(
-                        modifier = Modifier.fillMaxWidth()
-                            .height(40.dp)
-                            .background(Color.LightGray),
-                        contentAlignment = Alignment.BottomStart,
-                    ) {
-                        Label(entity.name, color = Color.Black)
-                    }
+                    EntityName(entity)
                     repeat(3) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth()
-                                .height(40.dp)
-                                .background(Color.LightGray),
-                            horizontalArrangement = Arrangement.spacedBy(2.dp)
-                        ) {
+                        Property {
+                            Label("x ")
+                            TextField(
+                                value = "",
+                                onValueChange = {},
+                            )
                         }
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun Property(content: @Composable RowScope.() -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth()
+            .height(40.dp)
+            .background(DarkTheme.Grey1)
+            .padding(horizontal = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(2.dp),
+        content = content,
+        verticalAlignment = Alignment.CenterVertically
+    )
+}
+
+@Composable
+private fun EntityName(entity: Entity) {
+    Box(
+        modifier = Modifier.fillMaxWidth()
+            .height(40.dp)
+            .padding(horizontal = 4.dp),
+        contentAlignment = Alignment.CenterStart,
+    ) {
+        Label(text = entity.name, fontWeight = FontWeight.Medium, fontSize = 14.sp)
     }
 }
