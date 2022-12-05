@@ -4,17 +4,15 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.fourlastor.entity.Entities
 import io.github.fourlastor.entity.Entity
 import io.kanro.compose.jetbrains.expui.control.Label
-import io.kanro.compose.jetbrains.expui.control.TextField
 import io.kanro.compose.jetbrains.expui.style.areaBackground
 import io.kanro.compose.jetbrains.expui.theme.DarkTheme
 
@@ -91,15 +89,10 @@ private fun <T> Property(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Label("$label ")
-        var text by remember(value) { mutableStateOf(value) }
-        TextField(
-            value = text,
-            onValueChange = { text = it },
-            modifier = Modifier.onFocusChanged {
-                if (!it.hasFocus) {
-                    onValueChange(validator(text))
-                }
-            }
+        TransparentField(
+            value = value,
+            onValueChange = onValueChange,
+            validator = validator,
         )
     }
 }
