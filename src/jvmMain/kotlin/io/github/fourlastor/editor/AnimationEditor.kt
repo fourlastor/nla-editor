@@ -120,7 +120,8 @@ private fun EditorUi(
                 PreviewPane(
                     entities = entities,
                     modifier = Modifier
-                        .fillMaxWidth(verticalCutPoint),
+                        .fillMaxWidth(verticalCutPoint)
+                        .fillMaxHeight(),
                 )
                 DraggableHandle(Orientation.Vertical) { verticalCutPoint += it.x / width }
                 LayersPane(
