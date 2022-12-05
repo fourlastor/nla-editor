@@ -15,7 +15,6 @@ import androidx.compose.ui.zIndex
 import io.github.fourlastor.entity.*
 import io.github.fourlastor.system.FileLoadDialog
 import io.github.fourlastor.system.FileSaveDialog
-import io.kanro.compose.jetbrains.expui.style.LocalAreaColors
 import io.kanro.compose.jetbrains.expui.style.areaBackground
 import io.kanro.compose.jetbrains.expui.theme.DarkTheme
 import io.kanro.compose.jetbrains.expui.window.JBWindow
@@ -137,10 +136,7 @@ private fun EditorUi(
                     onEntityAdd = onParentIdChange,
                 )
             }
-            DraggableHandle(
-                Orientation.Horizontal,
-                color = LocalAreaColors.current.startBorderColor
-            ) { horizontalCutPoint += it.y / height }
+            DraggableHandle(Orientation.Horizontal) { horizontalCutPoint += it.y / height }
             val propertyKeysListState = rememberLazyListState()
             val propertyNamesListState = rememberLazyListState()
             val scope = rememberCoroutineScope()

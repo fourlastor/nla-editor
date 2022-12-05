@@ -9,7 +9,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -20,11 +19,10 @@ import io.kanro.compose.jetbrains.expui.style.LocalAreaColors
 fun DraggableHandle(
     orientation: Orientation,
     modifier: Modifier = Modifier,
-    color: Color = Color.Unspecified,
+    color: Color = LocalAreaColors.current.startBorderColor,
     size: Dp = 4.dp,
     onDrag: (Offset) -> Unit,
 ) {
-    color.takeOrElse { LocalAreaColors.current.startBorderColor }
     Spacer(
         modifier = modifier
             .background(color)
