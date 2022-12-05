@@ -33,14 +33,11 @@ fun Timeline(
     propertyListState: LazyListState,
     modifier: Modifier = Modifier,
 ) {
-    var zoom by remember { mutableStateOf(1f) }
-    val secondWidth = 300.dp * zoom
+    val secondWidth = 300.dp
     val horizontalScrollState = rememberScrollState(0)
     val coroutineScope = rememberCoroutineScope()
 
     Column(modifier = modifier) {
-//        Slider(value = zoom, modifier = Modifier.fillMaxWidth(), onValueChange = { zoom = it })
-
         HorizontalScrollbar(
             modifier = Modifier
                 .fillMaxWidth()
@@ -113,6 +110,8 @@ fun Timeline(
                                 modifier = Modifier.fillMaxWidth()
                                     .height(40.dp),
                             )
+                            // this should be 1 track per property in the entity
+                            // 3 works because we have x,y,rotation
                             repeat(3) { index ->
                                 FrameTrack(
                                     duration = duration,

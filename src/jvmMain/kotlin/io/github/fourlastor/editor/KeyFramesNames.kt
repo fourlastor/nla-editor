@@ -4,9 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -22,6 +23,7 @@ fun KeyFramesValues(
     propertyNamesListState: LazyListState,
     entities: Entities,
     modifier: Modifier = Modifier,
+    onEntityChange: (Entity) -> Unit,
 ) {
     Column(
         modifier = modifier.fillMaxHeight()
@@ -42,21 +44,30 @@ fun KeyFramesValues(
             items(
                 count = entities.entities.size,
                 key = { entities.entities[it].id }
-            ) {
-                val entity = entities.entities[it]
+            ) { entityIndex ->
+                val entity = entities.entities[entityIndex]
                 Column(
                     verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
                     EntityName(entity)
-                    repeat(3) {
-                        Property {
-                            Label("x ")
-                            TextField(
-                                value = "",
-                                onValueChange = {},
-                            )
-                        }
-                    }
+                    Property(
+                        "X",
+                        entity.transform.x.toString(),
+                        { it.toFloatOrNull() ?: 0f },
+                        { onEntityChange(entity.x(it)) }
+                    )
+                    Property(
+                        "Y",
+                        entity.transform.y.toString(),
+                        { it.toFloatOrNull() ?: 0f },
+                        { onEntityChange(entity.y(it)) }
+                    )
+                    Property(
+                        "Rotation",
+                        entity.transform.rotation.toString(),
+                        { it.toFloatOrNull() ?: 0f },
+                        { onEntityChange(entity.rotation(it)) }
+                    )
                 }
             }
         }
@@ -64,16 +75,33 @@ fun KeyFramesValues(
 }
 
 @Composable
-private fun Property(content: @Composable RowScope.() -> Unit) {
+private fun <T> Property(
+    label: String,
+    value: String,
+    validator: (String) -> T,
+    onValueChange: (T) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Row(
-        modifier = Modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth()
             .height(40.dp)
             .background(DarkTheme.Grey1)
             .padding(horizontal = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(2.dp),
-        content = content,
         verticalAlignment = Alignment.CenterVertically
-    )
+    ) {
+        Label("$label ")
+        var text by remember(value) { mutableStateOf(value) }
+        TextField(
+            value = text,
+            onValueChange = { text = it },
+            modifier = Modifier.onFocusChanged {
+                if (!it.hasFocus) {
+                    onValueChange(validator(text))
+                }
+            }
+        )
+    }
 }
 
 @Composable

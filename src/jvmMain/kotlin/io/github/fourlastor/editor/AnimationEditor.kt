@@ -69,7 +69,11 @@ fun ApplicationScope.AnimationEditor() {
     if (loadRequested) {
         FileLoadDialog {
             if (it != null) {
-                // load
+                val entities = Json.decodeFromString(
+                    Entities.serializer(),
+                    it.readText()
+                )
+                println(entities)
             }
             loadRequested = false
         }
@@ -168,6 +172,7 @@ private fun EditorUi(
                     propertyNamesListState = propertyNamesListState,
                     entities = entities,
                     modifier = Modifier.padding(end = 4.dp),
+                    onEntityChange = { onEntitiesChange(entities.update(it)) }
                 )
             }
         }
