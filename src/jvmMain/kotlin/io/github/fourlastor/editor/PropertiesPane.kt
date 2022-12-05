@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.fourlastor.entity.Entities
@@ -47,7 +48,7 @@ fun PropertiesPane(
                 Column(
                     verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
-                    EntityName(entity)
+                    EntityName(entity, modifier = Modifier.fillMaxWidth(0.3f))
                     Property(
                         "X",
                         entity.transform.x.toString(),
@@ -85,26 +86,41 @@ private fun <T> Property(
             .height(40.dp)
             .background(DarkTheme.Grey1)
             .padding(horizontal = 4.dp),
-        horizontalArrangement = Arrangement.spacedBy(2.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Label("$label ")
+        Label(
+            text = "$label ",
+            modifier.fillMaxWidth(0.3f),
+            textAlign = TextAlign.End
+        )
         TransparentField(
             value = value,
             onValueChange = onValueChange,
             validator = validator,
+            modifier = Modifier.weight(1f)
         )
+        KeyFrame()
     }
 }
 
 @Composable
-private fun EntityName(entity: Entity) {
+private fun EntityName(
+    entity: Entity,
+    modifier: Modifier = Modifier,
+) {
     Box(
-        modifier = Modifier.fillMaxWidth()
+        modifier = modifier
             .height(40.dp)
             .padding(horizontal = 4.dp),
         contentAlignment = Alignment.CenterStart,
     ) {
-        Label(text = entity.name, fontWeight = FontWeight.Medium, fontSize = 14.sp)
+        Label(
+            text = entity.name,
+            fontWeight = FontWeight.Medium,
+            fontSize = 14.sp,
+            textAlign = TextAlign.End,
+            modifier = Modifier.fillMaxWidth(),
+        )
     }
 }
