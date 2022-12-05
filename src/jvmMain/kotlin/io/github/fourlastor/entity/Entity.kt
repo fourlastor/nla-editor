@@ -85,6 +85,11 @@ data class Transform(
     @Serializable(with = OffsetSerializer::class)
     val pivotOffset: Offset,
 ) {
+    val x: Float
+        get() = translation.x
+    val y: Float
+        get() = translation.y
+
     fun x(x: Float) = copy(translation = translation.copy(x = x))
 
     fun y(y: Float) = copy(translation = translation.copy(y = y))
