@@ -10,14 +10,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.pointer.PointerButton
 import androidx.compose.ui.layout.*
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import io.github.fourlastor.entity.Entities
-import io.kanro.compose.jetbrains.expui.control.Icon
 import io.kanro.compose.jetbrains.expui.control.Label
 import io.kanro.compose.jetbrains.expui.style.LocalAreaColors
 import io.kanro.compose.jetbrains.expui.theme.DarkTheme
@@ -191,18 +189,6 @@ private fun FrameTrack(
             }
         }
     }
-}
-
-@Composable
-private fun KeyFrame(
-    modifier: Modifier,
-) {
-    Icon(
-        "icons/diamond.svg",
-        modifier = modifier
-            .size(20.dp),
-        colorFilter = ColorFilter.tint(Color(0xFF9c3aef))
-    )
 }
 
 @LayoutScopeMarker
