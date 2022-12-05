@@ -1,28 +1,27 @@
 package io.github.fourlastor.editor
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import io.github.fourlastor.entity.Entities
 import io.github.fourlastor.entity.Entity
 import io.github.fourlastor.entity.EntityNode
 import io.github.fourlastor.entity.GroupNode
-import io.kanro.compose.jetbrains.expui.control.Icon
 import io.kanro.compose.jetbrains.expui.control.Label
 import io.kanro.compose.jetbrains.expui.control.TextField
+import io.kanro.compose.jetbrains.expui.control.themedSvgResource
+import io.kanro.compose.jetbrains.expui.style.LocalAreaColors
 
 /**
  * Property inspector panel.
@@ -109,7 +108,6 @@ private fun GroupNodeView(
     modifier: Modifier,
     onEntityChange: (Entity) -> Unit,
 ) {
-    var expanded by remember { mutableStateOf(false) }
     Column(
         modifier = modifier,
     ) {
@@ -121,21 +119,27 @@ private fun GroupNodeView(
             Row(
                 horizontalArrangement = Arrangement.spacedBy(2.dp),
                 verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth().padding(4.dp)
             ) {
-                Icon(
-                    resource = "icons/arrow.svg",
-                    modifier = Modifier.rotate(if (expanded) 90f else 0f)
-                        .clickable(onClick = { expanded = !expanded }),
+                SmallIcon("icons/group.svg")
+                Label(
+                    text = group.entity.name,
+                    fontSize = 18.sp
                 )
-                Label(group.entity.name)
             }
         }
-        if (expanded) {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(2.dp),
-                modifier = Modifier.padding(start = 24.dp).fillMaxWidth(),
-            ) {
-                group.children.forEach { EntityTreeView(it, selectedEntity, onEntitySelected, Modifier.fillMaxWidth(), onEntityChange) }
+        Column(
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+            modifier = Modifier.padding(start = 16.dp).fillMaxWidth(),
+        ) {
+            group.children.forEach {
+                EntityTreeView(
+                    it,
+                    selectedEntity,
+                    onEntitySelected,
+                    Modifier.fillMaxWidth(),
+                    onEntityChange
+                )
             }
         }
     }
@@ -157,26 +161,46 @@ private fun EntityNodeView(
         onSelected = { onEntitySelected(entity) },
         modifier = modifier
     ) { selected ->
-        var text by remember(entity.entity.name) { mutableStateOf(entity.entity.name) }
-        if (selected) TextField(
-            value = text,
-            onValueChange = {
-                text = it
-            },
-            modifier = Modifier
-                .padding(2.dp)
-                .onFocusChanged {
-                    if (!it.hasFocus) {
-                        onEntityChange(entity.entity.name(text))
-                    }
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
+            var text by remember(entity.entity.name) { mutableStateOf(entity.entity.name) }
+            if (selected) TextField(
+                value = text,
+                onValueChange = {
+                    text = it
                 },
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Number,
-                imeAction = ImeAction.Done
-            ),
-        )
-        else {
-            Label(entity.entity.name)
+                modifier = Modifier
+                    .padding(2.dp)
+                    .onFocusChanged {
+                        if (!it.hasFocus) {
+                            onEntityChange(entity.entity.name(text))
+                        }
+                    },
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Done
+                ),
+            )
+            else {
+                SmallIcon("icons/image.svg")
+                Label(
+                    text = entity.entity.name,
+                    fontSize = 18.sp
+                )
+            }
         }
     }
+}
+
+@Composable
+private fun SmallIcon(icon: String) {
+    Image(
+        themedSvgResource(icon),
+        contentDescription = null,
+        modifier = Modifier.size(14.dp),
+        colorFilter = ColorFilter.tint(LocalAreaColors.current.text),
+    )
 }
