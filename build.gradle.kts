@@ -1,4 +1,6 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.jetbrains.kotlin.utils.addToStdlib.ifTrue
+
 @Suppress(
     // known false positive: https://youtrack.jetbrains.com/issue/KTIJ-19369
     "DSL_SCOPE_VIOLATION"
@@ -22,6 +24,12 @@ kotlin {
     jvm {
         compilations.all {
             kotlinOptions.jvmTarget = "11"
+            (extra["io.github.fourlastor.nla.compose.reports"].toString().toBoolean()).ifTrue {
+                kotlinOptions.freeCompilerArgs += listOf(
+                    "-P",
+                    "plugin:androidx.compose.compiler.plugins.kotlin:reportsDestination=${project.rootDir.absolutePath}/reports"
+                )
+            }
         }
         withJava()
     }
