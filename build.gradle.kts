@@ -41,6 +41,7 @@ kotlin {
                     exclude("org.jetbrains.compose.material")
                 }
                 implementation(libs.expui)
+                implementation(libs.immutableCollections)
                 implementation(libs.serializationJson)
             }
         }
