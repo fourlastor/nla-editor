@@ -75,11 +75,13 @@ private fun EntityTreeView(
 val selectedColor = Color(0.3f, 0.5f, 0.8f)
 
 /** Used to make an element selectable. */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun Selectable(
     selected: Boolean,
     onSelected: () -> Unit,
     modifier: Modifier = Modifier,
+    onLongOrDoublePress: () -> Unit,
     content: @Composable BoxScope.(selected: Boolean) -> Unit,
 ) {
     val bgColor = if (selected) {
@@ -87,10 +89,15 @@ private fun Selectable(
     } else Color.Unspecified
     Box(
         modifier = modifier
-            .selectable(
-                selected = selected,
-                onClick = onSelected,
+            .combinedClickable(
+                onLongClick = onLongOrDoublePress,
+                onDoubleClick = onLongOrDoublePress,
+                onClick = { },
             )
+            //.selectable(
+            //    selected = selected,
+            //    onClick = onSelected,
+            //)
             .background(bgColor),
         content = { content(selected) },
     )
@@ -114,7 +121,8 @@ private fun GroupNodeView(
         Selectable(
             modifier = Modifier.fillMaxWidth(),
             selected = group == selectedEntity,
-            onSelected = { onEntitySelected(group) }
+            onSelected = { onEntitySelected(group) },
+            onLongOrDoublePress = { }
         ) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(2.dp),
@@ -156,32 +164,40 @@ private fun EntityNodeView(
     modifier: Modifier,
     onEntityChange: (Entity) -> Unit,
 ) {
+    var shouldRename by remember { mutableStateOf(false) }
+    fun startRenaming(): () -> Unit = { shouldRename = true }
+
     Selectable(
         selected = entity == selectedEntity,
         onSelected = { onEntitySelected(entity) },
-        modifier = modifier
-    ) { selected ->
+        modifier = modifier,
+        onLongOrDoublePress = {
+            startRenaming()
+            print("hi")
+        }
+    ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(4.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(2.dp)
         ) {
             var text by remember(entity.entity.name) { mutableStateOf(entity.entity.name) }
-            if (selected) TextField(
-                value = text,
-                onValueChange = {
-                    text = it
-                },
-                modifier = Modifier
-                    .padding(2.dp)
-                    .onFocusChanged {
-                        if (!it.hasFocus) {
-                            onEntityChange(entity.entity.name(text))
-                        }
+            if (shouldRename)
+                TextField(
+                    value = text,
+                    onValueChange = {
+                        text = it
                     },
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Number,
-                    imeAction = ImeAction.Done
+                    modifier = Modifier
+                        .padding(2.dp)
+                        .onFocusChanged {
+                            if (!it.hasFocus) {
+                                onEntityChange(entity.entity.name(text))
+                            }
+                        },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Done
                 ),
             )
             else {
