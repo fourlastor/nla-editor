@@ -1,34 +1,33 @@
 package io.github.fourlastor.editor.layers
 
-import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.fourlastor.editor.TransparentField
-import io.github.fourlastor.entity.Entities
-import io.github.fourlastor.entity.Entity
-import io.github.fourlastor.entity.EntityNode
-import io.github.fourlastor.entity.GroupNode
-import io.kanro.compose.jetbrains.expui.control.themedSvgResource
-import io.kanro.compose.jetbrains.expui.style.LocalAreaColors
+import io.github.fourlastor.editor.icon.MediumIcon
+import io.github.fourlastor.editor.icon.SmallIcon
+import io.github.fourlastor.entity.*
+import io.github.fourlastor.system.Selectable
+import io.kanro.compose.jetbrains.expui.control.ActionButton
+import io.kanro.compose.jetbrains.expui.control.Label
 
 /**
- * Property inspector panel.
- * Displays a tree of entities, and when selected it shows the editable data for the selected entity in a form.
+ * Layers panel.
+ * Displays a tree of entities, with editable names
  */
 @Composable
 fun LayersPane(
     entities: Entities,
     modifier: Modifier,
     onEntityChange: (Entity) -> Unit,
-    @Suppress("UNUSED_PARAMETER") onEntityAdd: (parentId: Long) -> Unit,
+    onAddGroup: (parentId: Long) -> Unit,
+    onAddImage: (parentId: Long) -> Unit,
 ) {
     var selectedEntity by remember { mutableStateOf<EntityNode?>(null) }
     val rootNode by remember(entities) { derivedStateOf { entities.asNode() } }
@@ -38,6 +37,19 @@ fun LayersPane(
             .fillMaxSize()
             .padding(2.dp)
     ) {
+        Row(
+            modifier = Modifier
+                .padding(4.dp)
+                .height(40.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Label(
+                text = "Layers",
+                modifier = Modifier.weight(1f),
+                fontSize = 16.sp
+            )
+            AddEntitiesButtons(selectedEntity, onAddGroup, onAddImage)
+        }
         EntityTreeView(
             entity = rootNode,
             modifier = Modifier.fillMaxHeight(0.7f)
@@ -49,6 +61,41 @@ fun LayersPane(
             },
             onEntityChange = onEntityChange,
         )
+    }
+}
+
+@Composable
+private fun AddEntitiesButtons(
+    selectedEntity: EntityNode?,
+    onAddGroup: (parentId: Long) -> Unit,
+    onAddImage: (parentId: Long) -> Unit,
+) {
+    if (selectedEntity !is GroupNode) {
+        return
+    }
+    AddButton(
+        parentId = selectedEntity.entity.id,
+        type = EntityType.GROUP,
+        onEntityAdd = onAddGroup
+    )
+    AddButton(
+        parentId = selectedEntity.entity.id,
+        type = EntityType.IMAGE,
+        onEntityAdd = onAddImage
+    )
+}
+
+@Composable
+private fun AddButton(
+    parentId: Long,
+    type: EntityType,
+    onEntityAdd: (parentId: Long) -> Unit,
+) {
+    ActionButton(
+        onClick = { onEntityAdd(parentId) },
+        modifier = Modifier.padding(4.dp)
+    ) {
+        MediumIcon(type.icon)
     }
 }
 
@@ -66,31 +113,6 @@ private fun EntityTreeView(
     } else {
         EntityNodeView(entity, selectedEntity, onEntitySelected, modifier, onEntityChange)
     }
-}
-
-val selectedColor = Color(0.3f, 0.5f, 0.8f)
-
-/** Used to make an element selectable. */
-@Composable
-private fun Selectable(
-    selected: Boolean,
-    onSelected: () -> Unit,
-    modifier: Modifier = Modifier,
-    content: @Composable BoxScope.(selected: Boolean) -> Unit,
-) {
-    val bgColor = if (selected) {
-        selectedColor
-    } else Color.Unspecified
-    Box(
-        modifier = modifier
-            .selectable(
-                selected = selected,
-                onClick = onSelected,
-            )
-            .background(bgColor),
-        content = { content(selected) },
-    )
-
 }
 
 /**
@@ -180,14 +202,4 @@ private fun EntityNodeView(
             )
         }
     }
-}
-
-@Composable
-private fun SmallIcon(icon: String) {
-    Image(
-        themedSvgResource(icon),
-        contentDescription = null,
-        modifier = Modifier.size(14.dp),
-        colorFilter = ColorFilter.tint(LocalAreaColors.current.text),
-    )
 }

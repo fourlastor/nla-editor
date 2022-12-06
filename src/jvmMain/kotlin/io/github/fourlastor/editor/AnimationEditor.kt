@@ -5,7 +5,6 @@ import androidx.compose.foundation.gestures.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.unit.DpSize
@@ -26,9 +25,9 @@ import java.io.File
 import kotlin.system.exitProcess
 
 @Composable
-/**
- * Main view, this displays a new window and holds the application state.
- */
+        /**
+         * Main view, this displays a new window and holds the application state.
+         */
 fun ApplicationScope.AnimationEditor() {
     /** `state` is the actual editor state, it contains a copy of [Entities]. */
     var state by rememberEditorState()
@@ -40,7 +39,12 @@ fun ApplicationScope.AnimationEditor() {
     var loadRequested by remember { mutableStateOf(false) }
 
     /** Local state. When this is set, a "new entity" popup is displayed. */
-    var newParentId: Long? by remember { mutableStateOf(null) }
+    var newImageParentId: Long? by remember { mutableStateOf(null) }
+
+    fun updateEntities(entities: Entities) {
+        state = state.copy(entities = entities)
+    }
+
     JBWindow(
         title = "NLA Editor",
         theme = DarkTheme,
@@ -58,9 +62,9 @@ fun ApplicationScope.AnimationEditor() {
     ) {
         EditorUi(
             entities = state.entities,
-            newParentId = newParentId,
-            onParentIdChange = { newParentId = it },
-            onEntitiesChange = { state = state.copy(entities = it) }
+            onEntitiesChange = { updateEntities(it) },
+            onAddGroup = { updateEntities(state.entities.group(it, "Group")) },
+            onAddImage = { newImageParentId = it },
         )
     }
     if (loadRequested) {
@@ -86,22 +90,31 @@ fun ApplicationScope.AnimationEditor() {
         }
     }
 
+    AddImage(
+        newImageParentId,
+        onAddImage = { parentId, name, path ->
+            updateEntities(state.entities.image(parentId, name, path))
+            newImageParentId = null
+        },
+        onCancel = { newImageParentId = null }
+    )
+
 }
 
 /**
  *  Main UI for the editor, contains the [PreviewPane], [Timeline], and [PropertiesPane].
  *  [entities] entities to display in the editor
- *  [newParentId] state to display (or not) the "create new entity"
- *  [onParentIdChange] callback used to request the creation of a new entity, by setting which group to parent it to
  *  [onEntitiesChange] callback to update [entities]
+ *  [onAddGroup] callback to request adding a new group
+ *  [onAddImage] callback to request adding a new image
  */
 @Composable
 @OptIn(ExperimentalFoundationApi::class)
 private fun EditorUi(
     entities: Entities,
-    newParentId: Long?,
-    onParentIdChange: (parentId: Long?) -> Unit,
     onEntitiesChange: (Entities) -> Unit,
+    onAddGroup: (parentId: Long) -> Unit,
+    onAddImage: (parentId: Long) -> Unit,
 ) {
     BoxWithConstraints(
         modifier = Modifier.fillMaxSize()
@@ -133,9 +146,9 @@ private fun EditorUi(
                         .zIndex(2f),
                     onEntityChange = {
                         onEntitiesChange(entities.update(it))
-                        onParentIdChange(null)
                     },
-                    onEntityAdd = onParentIdChange,
+                    onAddGroup = onAddGroup,
+                    onAddImage = onAddImage,
                 )
             }
             DraggableHandle(Orientation.Horizontal) { horizontalCutPoint += it.y / height }
@@ -173,25 +186,6 @@ private fun EditorUi(
                     onEntityChange = { onEntitiesChange(entities.update(it)) }
                 )
             }
-        }
-    }
-    newParentId?.also {
-        Dialog(
-            onCloseRequest = { onParentIdChange(null) },
-            state = rememberDialogState(position = WindowPosition(Alignment.Center))
-        ) {
-            NewEntity(
-                parentId = it,
-                onAddGroup = { name, parentId ->
-                    onEntitiesChange(entities.group(parentId, name))
-                    onParentIdChange(null)
-                },
-                onAddImage = { name, path, parentId ->
-                    onEntitiesChange(entities.image(parentId, name, path))
-                    onParentIdChange(null)
-                },
-                onCancel = { onParentIdChange(null) }
-            )
         }
     }
 }
