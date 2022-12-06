@@ -26,7 +26,8 @@ fun LayersPane(
     entities: Entities,
     modifier: Modifier,
     onEntityChange: (Entity) -> Unit,
-    onEntityAdd: (parentId: Long, type: EntityType) -> Unit,
+    onAddGroup: (parentId: Long) -> Unit,
+    onAddImage: (parentId: Long) -> Unit,
 ) {
     var selectedEntity by remember { mutableStateOf<EntityNode?>(null) }
     val rootNode by remember(entities) { derivedStateOf { entities.asNode() } }
@@ -47,7 +48,7 @@ fun LayersPane(
                 modifier = Modifier.weight(1f),
                 fontSize = 16.sp
             )
-            AddEntitiesButtons(selectedEntity, onEntityAdd)
+            AddEntitiesButtons(selectedEntity, onAddGroup, onAddImage)
         }
         EntityTreeView(
             entity = rootNode,
@@ -66,7 +67,8 @@ fun LayersPane(
 @Composable
 private fun AddEntitiesButtons(
     selectedEntity: EntityNode?,
-    onEntityAdd: (parentId: Long, type: EntityType) -> Unit,
+    onAddGroup: (parentId: Long) -> Unit,
+    onAddImage: (parentId: Long) -> Unit,
 ) {
     if (selectedEntity !is GroupNode) {
         return
@@ -74,12 +76,12 @@ private fun AddEntitiesButtons(
     AddButton(
         parentId = selectedEntity.entity.id,
         type = EntityType.GROUP,
-        onEntityAdd = onEntityAdd
+        onEntityAdd = onAddGroup
     )
     AddButton(
         parentId = selectedEntity.entity.id,
         type = EntityType.IMAGE,
-        onEntityAdd = onEntityAdd
+        onEntityAdd = onAddImage
     )
 }
 
@@ -87,12 +89,10 @@ private fun AddEntitiesButtons(
 private fun AddButton(
     parentId: Long,
     type: EntityType,
-    onEntityAdd: (parentId: Long, type: EntityType) -> Unit,
+    onEntityAdd: (parentId: Long) -> Unit,
 ) {
     ActionButton(
-        onClick = {
-            onEntityAdd(parentId, type)
-        },
+        onClick = { onEntityAdd(parentId) },
         modifier = Modifier.padding(4.dp)
     ) {
         MediumIcon(type.icon)
