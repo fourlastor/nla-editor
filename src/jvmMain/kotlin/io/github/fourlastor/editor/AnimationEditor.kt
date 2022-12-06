@@ -135,7 +135,7 @@ private fun EditorUi(
                         onEntitiesChange(entities.update(it))
                         onParentIdChange(null)
                     },
-                    onEntityAdd = onParentIdChange,
+                    onEntityAdd = { parentId, type -> onParentIdChange(parentId) },
                 )
             }
             DraggableHandle(Orientation.Horizontal) { horizontalCutPoint += it.y / height }
