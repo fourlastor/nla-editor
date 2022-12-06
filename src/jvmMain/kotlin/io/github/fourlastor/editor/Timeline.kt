@@ -15,7 +15,7 @@ import androidx.compose.ui.layout.*
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import io.github.fourlastor.entity.Entities
+import io.github.fourlastor.editor.state.EntitiesState
 import io.kanro.compose.jetbrains.expui.control.Label
 import io.kanro.compose.jetbrains.expui.style.LocalAreaColors
 import io.kanro.compose.jetbrains.expui.theme.DarkTheme
@@ -28,10 +28,10 @@ import kotlin.time.Duration.Companion.seconds
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Timeline(
-    duration: Duration = 5.seconds,
-    entities: Entities,
-    propertyListState: LazyListState,
-    modifier: Modifier = Modifier,
+        duration: Duration = 5.seconds,
+        entities: EntitiesState,
+        propertyListState: LazyListState,
+        modifier: Modifier = Modifier,
 ) {
     val secondWidth = 300.dp
     val horizontalScrollState = rememberScrollState(0)

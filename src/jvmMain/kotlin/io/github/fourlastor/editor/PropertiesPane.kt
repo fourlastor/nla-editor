@@ -1,7 +1,15 @@
 package io.github.fourlastor.editor
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
@@ -11,18 +19,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import io.github.fourlastor.entity.Entities
-import io.github.fourlastor.entity.Entity
+import io.github.fourlastor.editor.state.EntitiesState
+import io.github.fourlastor.editor.state.EntityState
+import io.github.fourlastor.entity.EntityUpdater
 import io.kanro.compose.jetbrains.expui.control.Label
 import io.kanro.compose.jetbrains.expui.style.areaBackground
 import io.kanro.compose.jetbrains.expui.theme.DarkTheme
 
 @Composable
 fun PropertiesPane(
-    propertyNamesListState: LazyListState,
-    entities: Entities,
-    modifier: Modifier = Modifier,
-    onEntityChange: (Entity) -> Unit,
+        propertyNamesListState: LazyListState,
+        entities: EntitiesState,
+        modifier: Modifier = Modifier,
+        entityUpdater: EntityUpdater,
 ) {
     Column(
         modifier = modifier.fillMaxHeight()
@@ -53,19 +62,19 @@ fun PropertiesPane(
                         "X",
                         entity.transform.x.toString(),
                         { it.toFloatOrNull() ?: 0f },
-                        { onEntityChange(entity.x(it)) }
+                            { x -> entityUpdater(entity.id) { it.x(x) } }
                     )
                     Property(
                         "Y",
                         entity.transform.y.toString(),
                         { it.toFloatOrNull() ?: 0f },
-                        { onEntityChange(entity.y(it)) }
+                            { y -> entityUpdater(entity.id) { it.y(y) } }
                     )
                     Property(
                         "Rotation",
                         entity.transform.rotation.toString(),
                         { it.toFloatOrNull() ?: 0f },
-                        { onEntityChange(entity.rotation(it)) }
+                            { rotation -> entityUpdater(entity.id) { it.rotation(rotation) } }
                     )
                 }
             }
@@ -106,8 +115,8 @@ private fun <T> Property(
 
 @Composable
 private fun EntityName(
-    entity: Entity,
-    modifier: Modifier = Modifier,
+        entity: EntityState,
+        modifier: Modifier = Modifier,
 ) {
     Box(
         modifier = modifier
