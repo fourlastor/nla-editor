@@ -5,13 +5,12 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.ApplicationScope
 import androidx.compose.ui.window.rememberWindowState
+import io.github.fourlastor.editor.save.LoadProject
+import io.github.fourlastor.editor.save.SaveProject
 import io.github.fourlastor.entity.Entities
 import io.github.fourlastor.entity.Transform
-import io.github.fourlastor.system.FileLoadDialog
-import io.github.fourlastor.system.FileSaveDialog
 import io.kanro.compose.jetbrains.expui.theme.DarkTheme
 import io.kanro.compose.jetbrains.expui.window.JBWindow
-import kotlinx.serialization.json.Json
 import java.io.File
 import kotlin.system.exitProcess
 
@@ -59,26 +58,31 @@ fun ApplicationScope.AnimationEditor() {
         )
     }
     if (loadRequested) {
-        FileLoadDialog {
-            if (it != null) {
-                val entities = Json.decodeFromString(
-                    Entities.serializer(),
-                    it.readText()
-                )
-                println(entities)
-            }
-            loadRequested = false
-        }
+        LoadProject(
+            onSuccess = {
+                updateEntities(it)
+                loadRequested = false
+            },
+            onFailure = {
+                println("Failed to load because $it")
+                loadRequested = false
+            },
+            onCancel = { loadRequested = false }
+        )
     }
     if (saveRequested) {
-        FileSaveDialog {
-            if (it != null) {
-                val json = Json.encodeToString(Entities.serializer(), state.entities)
-                println(json)
-            }
-
-            saveRequested = false
-        }
+        SaveProject(
+            entities = state.entities,
+            onSuccess = {
+                println("Saved project successfully.")
+                saveRequested = false
+            },
+            onFailure = {
+                println("Failed to save because $it")
+                saveRequested = false
+            },
+            onCancel = { saveRequested = false }
+        )
     }
 
     AddImage(
@@ -89,7 +93,6 @@ fun ApplicationScope.AnimationEditor() {
         },
         onCancel = { newImageParentId = null }
     )
-
 }
 
 @Composable
