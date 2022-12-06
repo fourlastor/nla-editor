@@ -1,25 +1,21 @@
-package io.github.fourlastor.editor
+package io.github.fourlastor.editor.layers
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.fourlastor.editor.TransparentField
 import io.github.fourlastor.entity.Entities
 import io.github.fourlastor.entity.Entity
 import io.github.fourlastor.entity.EntityNode
 import io.github.fourlastor.entity.GroupNode
-import io.kanro.compose.jetbrains.expui.control.Label
-import io.kanro.compose.jetbrains.expui.control.TextField
 import io.kanro.compose.jetbrains.expui.control.themedSvgResource
 import io.kanro.compose.jetbrains.expui.style.LocalAreaColors
 
@@ -75,13 +71,11 @@ private fun EntityTreeView(
 val selectedColor = Color(0.3f, 0.5f, 0.8f)
 
 /** Used to make an element selectable. */
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun Selectable(
     selected: Boolean,
     onSelected: () -> Unit,
     modifier: Modifier = Modifier,
-    onLongOrDoublePress: () -> Unit,
     content: @Composable BoxScope.(selected: Boolean) -> Unit,
 ) {
     val bgColor = if (selected) {
@@ -89,15 +83,10 @@ private fun Selectable(
     } else Color.Unspecified
     Box(
         modifier = modifier
-            .combinedClickable(
-                onLongClick = onLongOrDoublePress,
-                onDoubleClick = onLongOrDoublePress,
-                onClick = { },
+            .selectable(
+                selected = selected,
+                onClick = onSelected,
             )
-            //.selectable(
-            //    selected = selected,
-            //    onClick = onSelected,
-            //)
             .background(bgColor),
         content = { content(selected) },
     )
@@ -122,18 +111,13 @@ private fun GroupNodeView(
             modifier = Modifier.fillMaxWidth(),
             selected = group == selectedEntity,
             onSelected = { onEntitySelected(group) },
-            onLongOrDoublePress = { }
         ) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(2.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth().padding(4.dp)
             ) {
-                SmallIcon("icons/group.svg")
-                Label(
-                    text = group.entity.name,
-                    fontSize = 18.sp
-                )
+                EntityName("icons/group.svg", group.entity, onEntityChange)
             }
         }
         Column(
@@ -153,6 +137,21 @@ private fun GroupNodeView(
     }
 }
 
+@Composable
+private fun EntityName(
+    icon: String,
+    entity: Entity,
+    onEntityChange: (Entity) -> Unit,
+) {
+    SmallIcon(icon)
+    TransparentField(
+        value = entity.name,
+        validator = { it },
+        onValueChange = { onEntityChange(entity.name(it)) },
+        textStyle = TextStyle(fontSize = 16.sp)
+    )
+}
+
 /**
  * Displays a leaf entity, showing a label with its name.
  */
@@ -164,49 +163,21 @@ private fun EntityNodeView(
     modifier: Modifier,
     onEntityChange: (Entity) -> Unit,
 ) {
-    var shouldRename by remember { mutableStateOf(false) }
-    fun startRenaming(): () -> Unit = { shouldRename = true }
-
     Selectable(
         selected = entity == selectedEntity,
         onSelected = { onEntitySelected(entity) },
         modifier = modifier,
-        onLongOrDoublePress = {
-            startRenaming()
-            print("hi")
-        }
     ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(4.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(2.dp)
         ) {
-            var text by remember(entity.entity.name) { mutableStateOf(entity.entity.name) }
-            if (shouldRename)
-                TextField(
-                    value = text,
-                    onValueChange = {
-                        text = it
-                    },
-                    modifier = Modifier
-                        .padding(2.dp)
-                        .onFocusChanged {
-                            if (!it.hasFocus) {
-                                onEntityChange(entity.entity.name(text))
-                            }
-                        },
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Number,
-                        imeAction = ImeAction.Done
-                ),
+            EntityName(
+                icon = "icons/image.svg",
+                entity = entity.entity,
+                onEntityChange,
             )
-            else {
-                SmallIcon("icons/image.svg")
-                Label(
-                    text = entity.entity.name,
-                    fontSize = 18.sp
-                )
-            }
         }
     }
 }
