@@ -13,7 +13,8 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import io.github.fourlastor.editor.layers.LayersPane
-import io.github.fourlastor.entity.Entities
+import io.github.fourlastor.editor.state.EntitiesState
+import io.github.fourlastor.entity.EntityUpdater
 import io.kanro.compose.jetbrains.expui.style.areaBackground
 import kotlinx.coroutines.launch
 import org.jetbrains.skiko.Cursor
@@ -21,17 +22,17 @@ import org.jetbrains.skiko.Cursor
 /**
  *  Main UI for the editor, contains the [PreviewPane], [Timeline], and [PropertiesPane].
  *  [entities] entities to display in the editor
- *  [onEntitiesChange] callback to update [entities]
+ *  [entityUpdater] pass an ID and a lambda to update an entity
  *  [onAddGroup] callback to request adding a new group
  *  [onAddImage] callback to request adding a new image
  */
 @Composable
 @OptIn(ExperimentalFoundationApi::class)
 fun EditorUi(
-    entities: Entities,
-    onEntitiesChange: (Entities) -> Unit,
-    onAddGroup: (parentId: Long) -> Unit,
-    onAddImage: (parentId: Long) -> Unit,
+        entities: EntitiesState,
+        entityUpdater: EntityUpdater,
+        onAddGroup: (parentId: Long) -> Unit,
+        onAddImage: (parentId: Long) -> Unit,
 ) {
     BoxWithConstraints(
         modifier = Modifier.fillMaxSize()
@@ -56,16 +57,14 @@ fun EditorUi(
                 )
                 DraggableHandle(Orientation.Vertical) { verticalCutPoint += it.x / width }
                 LayersPane(
-                    entities = entities,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .areaBackground()
-                        .zIndex(2f),
-                    onEntityChange = {
-                        onEntitiesChange(entities.update(it))
-                    },
-                    onAddGroup = onAddGroup,
-                    onAddImage = onAddImage,
+                        entities = entities,
+                        modifier = Modifier
+                                .fillMaxSize()
+                                .areaBackground()
+                                .zIndex(2f),
+                        entityUpdater = entityUpdater,
+                        onAddGroup = onAddGroup,
+                        onAddImage = onAddImage,
                 )
             }
             DraggableHandle(Orientation.Horizontal) { horizontalCutPoint += it.y / height }
@@ -100,7 +99,7 @@ fun EditorUi(
                     propertyNamesListState = propertyNamesListState,
                     entities = entities,
                     modifier = Modifier.padding(end = 4.dp),
-                    onEntityChange = { onEntitiesChange(entities.update(it)) }
+                        entityUpdater = entityUpdater
                 )
             }
         }
