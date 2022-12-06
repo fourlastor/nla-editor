@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.*
 import androidx.compose.ui.zIndex
+import io.github.fourlastor.editor.layers.LayersPane
 import io.github.fourlastor.entity.*
 import io.github.fourlastor.system.FileLoadDialog
 import io.github.fourlastor.system.FileSaveDialog

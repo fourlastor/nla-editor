@@ -1,25 +1,21 @@
-package io.github.fourlastor.editor
+package io.github.fourlastor.editor.layers
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.fourlastor.editor.TransparentField
 import io.github.fourlastor.entity.Entities
 import io.github.fourlastor.entity.Entity
 import io.github.fourlastor.entity.EntityNode
 import io.github.fourlastor.entity.GroupNode
-import io.kanro.compose.jetbrains.expui.control.Label
-import io.kanro.compose.jetbrains.expui.control.TextField
 import io.kanro.compose.jetbrains.expui.control.themedSvgResource
 import io.kanro.compose.jetbrains.expui.style.LocalAreaColors
 
@@ -114,18 +110,14 @@ private fun GroupNodeView(
         Selectable(
             modifier = Modifier.fillMaxWidth(),
             selected = group == selectedEntity,
-            onSelected = { onEntitySelected(group) }
+            onSelected = { onEntitySelected(group) },
         ) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(2.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth().padding(4.dp)
             ) {
-                SmallIcon("icons/group.svg")
-                Label(
-                    text = group.entity.name,
-                    fontSize = 18.sp
-                )
+                EntityName("icons/group.svg", group.entity, onEntityChange)
             }
         }
         Column(
@@ -145,6 +137,21 @@ private fun GroupNodeView(
     }
 }
 
+@Composable
+private fun EntityName(
+    icon: String,
+    entity: Entity,
+    onEntityChange: (Entity) -> Unit,
+) {
+    SmallIcon(icon)
+    TransparentField(
+        value = entity.name,
+        validator = { it },
+        onValueChange = { onEntityChange(entity.name(it)) },
+        textStyle = TextStyle(fontSize = 16.sp)
+    )
+}
+
 /**
  * Displays a leaf entity, showing a label with its name.
  */
@@ -159,38 +166,18 @@ private fun EntityNodeView(
     Selectable(
         selected = entity == selectedEntity,
         onSelected = { onEntitySelected(entity) },
-        modifier = modifier
-    ) { selected ->
+        modifier = modifier,
+    ) {
         Row(
             modifier = Modifier.fillMaxWidth().padding(4.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(2.dp)
         ) {
-            var text by remember(entity.entity.name) { mutableStateOf(entity.entity.name) }
-            if (selected) TextField(
-                value = text,
-                onValueChange = {
-                    text = it
-                },
-                modifier = Modifier
-                    .padding(2.dp)
-                    .onFocusChanged {
-                        if (!it.hasFocus) {
-                            onEntityChange(entity.entity.name(text))
-                        }
-                    },
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Number,
-                    imeAction = ImeAction.Done
-                ),
+            EntityName(
+                icon = "icons/image.svg",
+                entity = entity.entity,
+                onEntityChange,
             )
-            else {
-                SmallIcon("icons/image.svg")
-                Label(
-                    text = entity.entity.name,
-                    fontSize = 18.sp
-                )
-            }
         }
     }
 }
