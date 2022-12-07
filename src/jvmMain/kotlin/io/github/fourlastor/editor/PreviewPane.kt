@@ -27,6 +27,8 @@ import io.github.fourlastor.editor.state.EntityNode
 import io.github.fourlastor.editor.state.GroupNode
 import io.github.fourlastor.editor.state.ImageNode
 import io.github.fourlastor.entity.Transform
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import java.io.File
 
 /**
@@ -60,7 +62,7 @@ fun PreviewPane(
 /** Transforms [entity] to a version that can be displayed, loading images and so forth. */
 private fun toPreview(entity: EntityNode): EntityPreview = when (entity) {
     is GroupNode -> GroupPreview(
-        entities = entity.children.map { toPreview(it) },
+        entities = entity.children.map { toPreview(it) }.toImmutableList(),
         transform = entity.entity.transform,
     )
 
@@ -73,14 +75,14 @@ private fun toPreview(entity: EntityNode): EntityPreview = when (entity) {
 private fun loadImageFromPath(path: String): ImageBitmap =
     File(path).inputStream().buffered().use(::loadImageBitmap)
 
-private sealed interface EntityPreview {
-    fun draw(drawScope: DrawScope)
+private sealed class EntityPreview {
+    abstract fun draw(drawScope: DrawScope)
 }
 
 private data class GroupPreview(
-    val entities: List<EntityPreview>,
+    val entities: ImmutableList<EntityPreview>,
     val transform: Transform,
-) : EntityPreview {
+) : EntityPreview() {
 
     override fun draw(drawScope: DrawScope) = drawScope.withTransform(transform.action) {
         for (entity in entities) {
@@ -92,7 +94,7 @@ private data class GroupPreview(
 private data class ImagePreview(
     val transform: Transform,
     val image: ImageBitmap,
-) : EntityPreview {
+) : EntityPreview() {
     override fun draw(drawScope: DrawScope) = drawScope.withTransform(transform.action) {
         drawImage(
             image = image,
