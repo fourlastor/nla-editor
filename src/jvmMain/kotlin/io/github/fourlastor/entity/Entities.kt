@@ -8,14 +8,14 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class Entities(
-    val entities: List<Entity>,
+    val entities: Map<Long, Entity>,
     val lastId: Long,
     val root: Group,
 ) {
 
     /** Updates the entity [entity] in the collection, matching by [Entity.id]. */
     fun update(entity: Entity): Entities = copy(
-        entities = entities.map { if (it.id == entity.id) entity else it },
+        entities = entities.minus(entity.id).plus(entity.id to entity)
     )
 
     /** Creates a new group, using the next available id. */
@@ -27,11 +27,13 @@ data class Entities(
         val newId = lastId + 1
         return copy(
             lastId = newId,
-            entities = entities + Group(
-                id = newId,
-                parentId = parent,
-                name = name,
-                transform = transform,
+            entities = entities.plus(
+                newId to Group(
+                    id = newId,
+                    parentId = parent,
+                    name = name,
+                    transform = transform,
+                )
             )
         )
     }
@@ -45,34 +47,36 @@ data class Entities(
     ): Entities {
         val newId = lastId + 1
         return copy(
-                lastId = newId,
-                entities = entities + Image(
-                        id = newId,
-                        parentId = parent,
-                        name = name,
-                        transform = transform,
-                        path = path,
-                ),
+            lastId = newId,
+            entities = entities.plus(
+                newId to Image(
+                    id = newId,
+                    parentId = parent,
+                    name = name,
+                    transform = transform,
+                    path = path,
+                )
+            ),
         )
     }
 
     fun byId(id: Long): Entity {
         if (id == 0L) return root
-        return entities.first { it.id == id }
+        return checkNotNull(entities[id]) { "Entity with id $id not found" }
     }
 
     companion object {
 
         /** Initial empty state. */
         fun empty() = Entities(
-                entities = emptyList(),
-                lastId = 0,
-                root = Group(
-                        0,
-                        null,
-                        "Root",
-                        Transform.IDENTITY,
-                )
+            entities = emptyMap(),
+            lastId = 0,
+            root = Group(
+                0,
+                null,
+                "Root",
+                Transform.IDENTITY,
+            )
         )
     }
 }
