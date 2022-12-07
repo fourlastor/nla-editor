@@ -73,24 +73,9 @@ private fun PropertiesPaneUi(
                     verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
                     EntityName(entity, modifier = Modifier.fillMaxWidth(0.3f))
-                    Property(
-                        "X",
-                        entity.transform.x.toString(),
-                        { it.toFloatOrNull() ?: 0f },
-                        { x -> entityUpdater(entity.id) { it.x(x) } }
-                    )
-                    Property(
-                        "Y",
-                        entity.transform.y.toString(),
-                        { it.toFloatOrNull() ?: 0f },
-                        { y -> entityUpdater(entity.id) { it.y(y) } }
-                    )
-                    Property(
-                        "Rotation",
-                        entity.transform.rotation.toString(),
-                        { it.toFloatOrNull() ?: 0f },
-                        { rotation -> entityUpdater(entity.id) { it.rotation(rotation) } }
-                    )
+                    for (property in entity.properties) {
+                        Property(property, entityUpdater)
+                    }
                 }
             }
         }
@@ -98,7 +83,22 @@ private fun PropertiesPaneUi(
 }
 
 @Composable
-private fun <T> Property(
+private fun Property(
+    property: PropertiesState.Property,
+    entityUpdater: EntityUpdater
+) {
+    when (property) {
+        is PropertiesState.FloatProperty -> PropertyUi(
+            label = property.label,
+            value = property.value.toString(),
+            validator = { it.toFloatOrNull() ?: 0f },
+            onValueChange = { property.updater.update(it, entityUpdater) }
+        )
+    }
+}
+
+@Composable
+private fun <T> PropertyUi(
     label: String,
     value: String,
     validator: (String) -> T,
