@@ -1,4 +1,4 @@
-package io.github.fourlastor.system
+package io.github.fourlastor.system.serializer
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind
@@ -12,7 +12,10 @@ import kotlin.time.toDuration
 
 object DurationSerializer : KSerializer<Duration> {
     override val descriptor: SerialDescriptor
-        get() = PrimitiveSerialDescriptor("io.github.fourlastor.system.DurationSerializer", PrimitiveKind.LONG)
+        get() = PrimitiveSerialDescriptor(
+            "io.github.fourlastor.system.serializer.DurationSerializer",
+            PrimitiveKind.LONG
+        )
 
     override fun deserialize(decoder: Decoder): Duration {
         return decoder.decodeLong().toDuration(DurationUnit.MILLISECONDS)
