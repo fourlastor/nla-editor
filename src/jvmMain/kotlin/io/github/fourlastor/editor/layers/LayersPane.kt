@@ -118,11 +118,12 @@ private fun EntityTreeView(
         entity: EntityNode,
         selectedEntity: EntityNode?,
         onEntitySelected: (EntityNode) -> Unit,
+        onEntityCollapse: (Long) -> Unit,
         modifier: Modifier = Modifier,
         entityUpdater: EntityUpdater,
 ) {
     when (entity) {
-        is GroupNode -> GroupNodeView(entity, selectedEntity, onEntitySelected, modifier, entityUpdater)
+        is GroupNode -> GroupNodeView(entity, selectedEntity, onEntitySelected, onEntityCollapse, modifier, entityUpdater)
         is ImageNode -> ImageNodeView(entity, selectedEntity, onEntitySelected, modifier, entityUpdater)
     }
 }
@@ -135,6 +136,7 @@ private fun GroupNodeView(
         group: GroupNode,
         selectedEntity: EntityNode?,
         onEntitySelected: (EntityNode) -> Unit,
+        onEntityCollapse: (Long) -> Unit,
         modifier: Modifier,
         entityUpdater: EntityUpdater,
 ) {
@@ -146,11 +148,18 @@ private fun GroupNodeView(
             selected = group == selectedEntity,
             onSelected = { onEntitySelected(group) },
         ) {
+
+            //remember collapsed
+
             Row(
                 horizontalArrangement = Arrangement.spacedBy(2.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth().padding(4.dp)
             ) {
+                // Expand/Collapse button
+                AddButton(
+                        parentId = group.entity.id, type = EntityType.COLLAPSE, onEntityAdd = onEntityCollapse
+                )
                 EntityName("icons/group.svg", group.entity, entityUpdater)
             }
         }
@@ -163,6 +172,7 @@ private fun GroupNodeView(
                         it,
                         selectedEntity,
                         onEntitySelected,
+                        onEntityCollapse,
                         Modifier.fillMaxWidth(),
                         entityUpdater,
                 )

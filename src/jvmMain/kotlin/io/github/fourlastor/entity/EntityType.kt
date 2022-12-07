@@ -6,4 +6,5 @@ enum class EntityType(
     GROUP("icons/group.svg"),
     IMAGE("icons/image.svg"),
     DELETE("icons/trashcan.svg"),
+    COLLAPSE("icons/add.svg"),
 }

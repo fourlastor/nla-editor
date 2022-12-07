@@ -48,6 +48,7 @@ class GroupState(
         parentId: Long?,
         transform: Transform,
         name: String,
+        val collapsed: Boolean,
 ) : EntityState(id, parentId, transform, name)
 
 class ImageState(
@@ -72,7 +73,7 @@ fun Entities.toEditorState(): EditorState {
     )
 }
 
-private fun Group.groupState() = GroupState(id, parentId, transform, name)
+private fun Group.groupState() = GroupState(id, parentId, transform, name, collapsed = false)
 
 private fun Image.imageState() =
         ImageState(id, parentId, name, transform, path)
