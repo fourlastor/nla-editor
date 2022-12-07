@@ -82,22 +82,23 @@ private fun AddEntitiesButtons(
     onAddImage: (parentId: Long) -> Unit,
     onDeleteNode: (parentId: Long) -> Unit,
 ) {
-    if (selectedEntity == null) {
-        return
-    }
-    AddButton(
+    if (selectedEntity != null && selectedEntity.entity.isNotRoot()) {
+        AddButton(
             parentId = selectedEntity.entity.id, type = EntityType.DELETE, onEntityAdd = onDeleteNode
-    )
+        )
+    }
     if (selectedEntity !is GroupNode) {
         return
     }
     AddButton(
-            parentId = selectedEntity.entity.id, type = EntityType.GROUP, onEntityAdd = onAddGroup
+        parentId = selectedEntity.entity.id, type = EntityType.GROUP, onEntityAdd = onAddGroup
     )
     AddButton(
-            parentId = selectedEntity.entity.id, type = EntityType.IMAGE, onEntityAdd = onAddImage
+        parentId = selectedEntity.entity.id, type = EntityType.IMAGE, onEntityAdd = onAddImage
     )
 }
+
+private fun EntityState.isNotRoot() = id != 0L
 
 @Composable
 private fun AddButton(
@@ -106,7 +107,7 @@ private fun AddButton(
     onEntityAdd: (parentId: Long) -> Unit,
 ) {
     ActionButton(
-            onClick = { onEntityAdd(parentId) }, modifier = Modifier.padding(4.dp)
+        onClick = { onEntityAdd(parentId) }, modifier = Modifier.padding(4.dp)
     ) {
         MediumIcon(type.icon)
     }
