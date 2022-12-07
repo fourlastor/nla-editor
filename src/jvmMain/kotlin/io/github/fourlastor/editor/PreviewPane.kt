@@ -38,8 +38,8 @@ import java.io.File
 @ExperimentalFoundationApi
 @Composable
 fun PreviewPane(
-        entities: EntitiesState,
-        modifier: Modifier,
+    entities: EntitiesState,
+    modifier: Modifier,
 ) {
     var pan by remember { mutableStateOf(Offset.Zero) }
     val entityPreview by remember(entities) { derivedStateOf { toPreview(entities.asNode()) } }
