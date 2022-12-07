@@ -14,6 +14,7 @@ import io.github.fourlastor.editor.save.LoadProject
 import io.github.fourlastor.editor.save.SaveProject
 import io.github.fourlastor.editor.state.toEditorState
 import io.github.fourlastor.entity.Entities
+import io.github.fourlastor.entity.demoData
 import io.kanro.compose.jetbrains.expui.theme.DarkTheme
 import io.kanro.compose.jetbrains.expui.window.JBWindow
 import kotlin.system.exitProcess
@@ -24,7 +25,7 @@ import kotlin.system.exitProcess
          */
 fun ApplicationScope.AnimationEditor() {
     /** `state` is the actual editor state, it contains a copy of [Entities]. */
-    var dataState by remember { mutableStateOf(Entities.empty()) }
+    var dataState by remember { mutableStateOf(demoData()) }
     val editorState by remember(dataState) { derivedStateOf { dataState.toEditorState() } }
 
     /** Local state, it's used to display or not the save popup. */
