@@ -32,6 +32,7 @@ fun EditorUi(
         entities: EntitiesState,
         entityUpdater: EntityUpdater,
         onAddGroup: (parentId: Long) -> Unit,
+        onDeleteNode: (parentId: Long) -> Unit,
         onAddImage: (parentId: Long) -> Unit,
 ) {
     BoxWithConstraints(
@@ -65,6 +66,7 @@ fun EditorUi(
                         entityUpdater = entityUpdater,
                         onAddGroup = onAddGroup,
                         onAddImage = onAddImage,
+                        onDeleteNode = onDeleteNode,
                 )
             }
             DraggableHandle(Orientation.Horizontal) { horizontalCutPoint += it.y / height }

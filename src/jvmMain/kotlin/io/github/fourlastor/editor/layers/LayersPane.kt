@@ -46,6 +46,7 @@ fun LayersPane(
         entityUpdater: EntityUpdater,
         onAddGroup: (parentId: Long) -> Unit,
         onAddImage: (parentId: Long) -> Unit,
+        onDeleteNode: (parentId: Long) -> Unit,
 ) {
     var selectedEntity by remember { mutableStateOf<EntityNode?>(null) }
     val rootNode by remember(entities) { derivedStateOf { entities.asNode() } }
@@ -60,7 +61,7 @@ fun LayersPane(
             Label(
                     text = "Layers", modifier = Modifier.weight(1f), fontSize = 16.sp
             )
-            AddEntitiesButtons(selectedEntity, onAddGroup, onAddImage)
+            AddEntitiesButtons(selectedEntity, onAddGroup, onAddImage, onDeleteNode)
         }
         EntityTreeView(
                 entity = rootNode,
@@ -79,7 +80,14 @@ private fun AddEntitiesButtons(
     selectedEntity: EntityNode?,
     onAddGroup: (parentId: Long) -> Unit,
     onAddImage: (parentId: Long) -> Unit,
+    onDeleteNode: (parentId: Long) -> Unit,
 ) {
+    if (selectedEntity == null) {
+        return
+    }
+    AddButton(
+            parentId = selectedEntity.entity.id, type = EntityType.DELETE, onEntityAdd = onDeleteNode
+    )
     if (selectedEntity !is GroupNode) {
         return
     }

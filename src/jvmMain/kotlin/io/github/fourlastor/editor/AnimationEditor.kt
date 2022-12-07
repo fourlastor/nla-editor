@@ -62,6 +62,7 @@ fun ApplicationScope.AnimationEditor() {
                     updateEntities(entities = dataState.update(update(dataState.byId(id))))
                 },
                 onAddGroup = { updateEntities(dataState.group(it, "Group")) },
+                onDeleteNode = { updateEntities(dataState.remove(it)) },
         ) { newImageParentId = it }
     }
     if (loadRequested) {
