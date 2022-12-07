@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -39,7 +40,7 @@ fun PropertiesPane(
     modifier: Modifier = Modifier,
     entityUpdater: EntityUpdater,
 ) {
-    val state by remember(project, viewState) { derivedStateOf { project.toPropertiesState() } }
+    val state by remember(project, viewState) { derivedStateOf { project.toPropertiesState(viewState) } }
     PropertiesPaneUi(modifier, propertyNamesListState, state, entityUpdater)
 }
 
@@ -90,22 +91,25 @@ private fun Property(
     entityUpdater: EntityUpdater
 ) {
     when (property) {
-        is PropertiesState.FloatProperty -> PropertyUi(
+        is PropertiesState.FloatProperty -> PropertyField(
             label = property.label,
             value = property.value.toString(),
             validator = { it.toFloatOrNull() ?: 0f },
             onValueChange = { property.updater.update(it, entityUpdater) }
         )
+
+        is PropertiesState.ReadonlyFloatProperty -> PropertyReadOnly(
+            label = property.label,
+            value = property.value.toString(),
+        )
     }
 }
 
 @Composable
-private fun <T> PropertyUi(
+private fun PropertyTrack(
     label: String,
-    value: String,
-    validator: (String) -> T,
-    onValueChange: (T) -> Unit,
     modifier: Modifier = Modifier,
+    content: @Composable RowScope.() -> Unit,
 ) {
     Row(
         modifier = modifier.fillMaxWidth()
@@ -117,16 +121,49 @@ private fun <T> PropertyUi(
     ) {
         Label(
             text = "$label ",
-            modifier.fillMaxWidth(0.3f),
+            Modifier.fillMaxWidth(0.3f),
             textAlign = TextAlign.End
         )
+        content()
+        KeyFrame()
+    }
+}
+
+@Composable
+private fun <T> PropertyField(
+    label: String,
+    value: String,
+    validator: (String) -> T,
+    onValueChange: (T) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    PropertyTrack(
+        label = label,
+        modifier = modifier
+    ) {
         TransparentField(
             value = value,
             onValueChange = onValueChange,
             validator = validator,
             modifier = Modifier.weight(1f)
         )
-        KeyFrame()
+    }
+}
+
+@Composable
+private fun PropertyReadOnly(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier,
+) {
+    PropertyTrack(
+        label = label,
+        modifier = modifier
+    ) {
+        Label(
+            text = value,
+            modifier = Modifier.weight(1f)
+        )
     }
 }
 
