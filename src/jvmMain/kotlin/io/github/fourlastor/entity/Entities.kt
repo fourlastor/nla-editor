@@ -43,8 +43,14 @@ data class Entities(
     fun remove(
         id: Long,
     ): Entities {
-        return copy(entities = entities.minus(id))
+        val filter = idsForParent(id).toSet()
+        return copy(entities = entities.filter { (id, _) -> id !in filter })
     }
+
+    private fun idsForParent(parentId: Long): Sequence<Long> = entities.entries.asSequence()
+        .filter { (_, entity) -> entity.parentId == parentId }
+        .flatMap { (id) -> idsForParent(id) }
+        .plusElement(parentId)
 
     /** Creates a new image, using the next available id. */
     fun image(
