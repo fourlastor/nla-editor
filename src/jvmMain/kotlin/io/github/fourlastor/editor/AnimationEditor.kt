@@ -21,9 +21,9 @@ import io.kanro.compose.jetbrains.expui.window.JBWindow
 import kotlin.system.exitProcess
 
 @Composable
-        /**
-         * Main view, this displays a new window and holds the application state.
-         */
+/**
+ * Main view, this displays a new window and holds the application state.
+ */
 fun ApplicationScope.AnimationEditor() {
     /** `state` is the actual editor state, it contains a copy of [Entities]. */
     var project by remember { mutableStateOf(demoData()) }
