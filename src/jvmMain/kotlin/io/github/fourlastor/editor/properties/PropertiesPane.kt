@@ -1,4 +1,4 @@
-package io.github.fourlastor.editor
+package io.github.fourlastor.editor.properties
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -13,6 +13,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -20,18 +23,30 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.fourlastor.data.EntityUpdater
+import io.github.fourlastor.editor.KeyFrame
+import io.github.fourlastor.editor.TransparentField
 import io.github.fourlastor.editor.state.EntitiesState
-import io.github.fourlastor.editor.state.EntityState
 import io.kanro.compose.jetbrains.expui.control.Label
 import io.kanro.compose.jetbrains.expui.style.areaBackground
 import io.kanro.compose.jetbrains.expui.theme.DarkTheme
 
 @Composable
 fun PropertiesPane(
-        propertyNamesListState: LazyListState,
-        entities: EntitiesState,
-        modifier: Modifier = Modifier,
-        entityUpdater: EntityUpdater,
+    propertyNamesListState: LazyListState,
+    entities: EntitiesState,
+    modifier: Modifier = Modifier,
+    entityUpdater: EntityUpdater,
+) {
+    val state by remember(entities) { derivedStateOf { entities.toPropertiesState() } }
+    PropertiesPaneUi(modifier, propertyNamesListState, state, entityUpdater)
+}
+
+@Composable
+private fun PropertiesPaneUi(
+    modifier: Modifier,
+    propertyNamesListState: LazyListState,
+    state: PropertiesState,
+    entityUpdater: EntityUpdater,
 ) {
     Column(
         modifier = modifier.fillMaxHeight()
@@ -50,10 +65,10 @@ fun PropertiesPane(
             userScrollEnabled = false,
         ) {
             items(
-                count = entities.entities.size,
-                key = { entities.entities[it].id }
+                count = state.entities.size,
+                key = { state.entities[it].id }
             ) { entityIndex ->
-                val entity = entities.entities[entityIndex]
+                val entity = state.entities[entityIndex]
                 Column(
                     verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
@@ -62,19 +77,19 @@ fun PropertiesPane(
                         "X",
                         entity.transform.x.toString(),
                         { it.toFloatOrNull() ?: 0f },
-                            { x -> entityUpdater(entity.id) { it.x(x) } }
+                        { x -> entityUpdater(entity.id) { it.x(x) } }
                     )
                     Property(
                         "Y",
                         entity.transform.y.toString(),
                         { it.toFloatOrNull() ?: 0f },
-                            { y -> entityUpdater(entity.id) { it.y(y) } }
+                        { y -> entityUpdater(entity.id) { it.y(y) } }
                     )
                     Property(
                         "Rotation",
                         entity.transform.rotation.toString(),
                         { it.toFloatOrNull() ?: 0f },
-                            { rotation -> entityUpdater(entity.id) { it.rotation(rotation) } }
+                        { rotation -> entityUpdater(entity.id) { it.rotation(rotation) } }
                     )
                 }
             }
@@ -115,8 +130,8 @@ private fun <T> Property(
 
 @Composable
 private fun EntityName(
-        entity: EntityState,
-        modifier: Modifier = Modifier,
+    entity: PropertiesState.Entity,
+    modifier: Modifier = Modifier,
 ) {
     Box(
         modifier = modifier
