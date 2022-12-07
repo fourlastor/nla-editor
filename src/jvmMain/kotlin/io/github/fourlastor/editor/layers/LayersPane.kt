@@ -46,6 +46,7 @@ fun LayersPane(
         entityUpdater: EntityUpdater,
         onAddGroup: (parentId: Long) -> Unit,
         onAddImage: (parentId: Long) -> Unit,
+        onDeleteNode: (parentId: Long) -> Unit,
 ) {
     var selectedEntity by remember { mutableStateOf<EntityNode?>(null) }
     val rootNode by remember(entities) { derivedStateOf { entities.asNode() } }
@@ -60,7 +61,7 @@ fun LayersPane(
             Label(
                     text = "Layers", modifier = Modifier.weight(1f), fontSize = 16.sp
             )
-            AddEntitiesButtons(selectedEntity, onAddGroup, onAddImage)
+            AddEntitiesButtons(selectedEntity, onAddGroup, onAddImage, onDeleteNode)
         }
         EntityTreeView(
                 entity = rootNode,
@@ -79,17 +80,25 @@ private fun AddEntitiesButtons(
     selectedEntity: EntityNode?,
     onAddGroup: (parentId: Long) -> Unit,
     onAddImage: (parentId: Long) -> Unit,
+    onDeleteNode: (parentId: Long) -> Unit,
 ) {
+    if (selectedEntity != null && selectedEntity.entity.isNotRoot()) {
+        AddButton(
+            parentId = selectedEntity.entity.id, type = EntityType.DELETE, onEntityAdd = onDeleteNode
+        )
+    }
     if (selectedEntity !is GroupNode) {
         return
     }
     AddButton(
-            parentId = selectedEntity.entity.id, type = EntityType.GROUP, onEntityAdd = onAddGroup
+        parentId = selectedEntity.entity.id, type = EntityType.GROUP, onEntityAdd = onAddGroup
     )
     AddButton(
-            parentId = selectedEntity.entity.id, type = EntityType.IMAGE, onEntityAdd = onAddImage
+        parentId = selectedEntity.entity.id, type = EntityType.IMAGE, onEntityAdd = onAddImage
     )
 }
+
+private fun EntityState.isNotRoot() = id != 0L
 
 @Composable
 private fun AddButton(
@@ -98,7 +107,7 @@ private fun AddButton(
     onEntityAdd: (parentId: Long) -> Unit,
 ) {
     ActionButton(
-            onClick = { onEntityAdd(parentId) }, modifier = Modifier.padding(4.dp)
+        onClick = { onEntityAdd(parentId) }, modifier = Modifier.padding(4.dp)
     ) {
         MediumIcon(type.icon)
     }

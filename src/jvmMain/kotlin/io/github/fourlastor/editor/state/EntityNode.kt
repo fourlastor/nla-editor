@@ -2,13 +2,15 @@ package io.github.fourlastor.editor.state
 
 import kotlinx.collections.immutable.ImmutableList
 
-sealed class EntityNode
+sealed class EntityNode {
+        abstract val entity: EntityState
+}
 
 class GroupNode(
-        val entity: GroupState,
+        override val entity: GroupState,
         val children: ImmutableList<EntityNode>,
 ) : EntityNode()
 
 class ImageNode(
-        val entity: ImageState,
+        override val entity: ImageState,
 ) : EntityNode()
