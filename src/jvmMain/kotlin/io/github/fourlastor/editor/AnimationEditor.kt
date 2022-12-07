@@ -76,7 +76,7 @@ fun ApplicationScope.AnimationEditor() {
             onAddGroup = { updateEntities(entities.group(it, "Group")) },
             onDeleteNode = { updateEntities(entities.remove(it)) },
             onAddImage = { newImageParentId = it },
-            onToggleAnimationMode = { viewState = viewState.copy(animationsEnabled = it) }
+            onToggleAnimationMode = { viewState = viewState.copy(animations = it) }
         )
     }
     if (loadRequested) {

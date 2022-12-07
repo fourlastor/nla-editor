@@ -1,11 +1,20 @@
 package io.github.fourlastor.editor.state
 
 data class ViewState(
-    val animationsEnabled: Boolean,
+    val animations: AnimationState,
 ) {
+    sealed class AnimationState
+
+    object Disabled : AnimationState()
+    sealed class Enabled : AnimationState()
+
+    object Selecting : Enabled()
+    class Selected(val name: String) : Enabled()
+
+
     companion object {
         fun initial() = ViewState(
-            animationsEnabled = false,
+            animations = Disabled,
         )
     }
 }

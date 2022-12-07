@@ -8,7 +8,6 @@ import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.unit.dp
@@ -17,6 +16,7 @@ import io.github.fourlastor.data.EntityUpdater
 import io.github.fourlastor.editor.layers.LayersPane
 import io.github.fourlastor.editor.properties.PropertiesPane
 import io.github.fourlastor.editor.state.EditorState
+import io.github.fourlastor.editor.state.ViewState
 import io.kanro.compose.jetbrains.expui.style.areaBackground
 import kotlinx.coroutines.launch
 import org.jetbrains.skiko.Cursor
@@ -35,15 +35,14 @@ fun EditorUi(
     onAddGroup: (parentId: Long) -> Unit,
     onDeleteNode: (parentId: Long) -> Unit,
     onAddImage: (parentId: Long) -> Unit,
-    onToggleAnimationMode: (enabled: Boolean) -> Unit,
+    onToggleAnimationMode: (enabled: ViewState.AnimationState) -> Unit,
 ) {
     val entities = state.entities
     val viewState = state.viewState
     Column(
         modifier = Modifier.fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        AnimationModeToggle(viewState.animationsEnabled, onToggleAnimationMode)
+        AnimationMode(viewState.animations, onToggleAnimationMode)
 
         BoxWithConstraints(
             modifier = Modifier.fillMaxSize()
@@ -96,7 +95,7 @@ fun EditorUi(
                         .fillMaxHeight()
                         .scrollable(scrollState, orientation = Orientation.Vertical)
                 ) {
-                    if (viewState.animationsEnabled) {
+                    if (viewState.animations is ViewState.Enabled) {
                         Timeline(
                             entities = entities,
                             propertyListState = propertyKeysListState,
