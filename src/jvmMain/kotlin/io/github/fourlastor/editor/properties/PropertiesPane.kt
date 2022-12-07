@@ -23,8 +23,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.fourlastor.data.Entities
 import io.github.fourlastor.data.EntityUpdater
-import io.github.fourlastor.data.LatestProject
 import io.github.fourlastor.editor.KeyFrame
 import io.github.fourlastor.editor.TransparentField
 import io.github.fourlastor.editor.state.ViewState
@@ -35,12 +35,12 @@ import io.kanro.compose.jetbrains.expui.theme.DarkTheme
 @Composable
 fun PropertiesPane(
     propertyNamesListState: LazyListState,
-    project: LatestProject,
+    entities: Entities,
     viewState: ViewState,
     modifier: Modifier = Modifier,
     entityUpdater: EntityUpdater,
 ) {
-    val state by remember(project, viewState) { derivedStateOf { project.toPropertiesState(viewState) } }
+    val state by remember(entities, viewState) { derivedStateOf { toPropertiesState(entities, viewState) } }
     PropertiesPaneUi(modifier, propertyNamesListState, state, entityUpdater)
 }
 

@@ -7,26 +7,27 @@ import kotlin.time.Duration
 @Serializable
 data class Animations(
     val animations: Map<Long, Animation>,
-    val lastId: Long,
 ) {
-    fun byId(id: Long) = checkNotNull(animations[id]) { "Animation with id $id not found" }
+    operator fun get(id: Long) = checkNotNull(animations[id]) { "Animation with id $id not found" }
 
-    fun animation(name: String, duration: Duration): Animations {
-        val id = lastId + 1
-        return copy(
-            animations = animations.plus(
-                id to Animation(
-                    id, name, duration, emptyMap()
-                )
-            ),
-            lastId = id,
+    fun animation(animation: Animation): Animations = copy(
+        animations = animations.plus(animation.id to animation),
+    )
+
+    fun keyFrame(animationId: Long, entityId: Long, propertyId: Long, position: Duration, value: Float): Animations {
+        return animation(
+            this[animationId].keyFrame(
+                entityId,
+                propertyId,
+                position,
+                value
+            )
         )
     }
 
     companion object {
         fun empty(): Animations = Animations(
             animations = emptyMap(),
-            lastId = 0,
         )
     }
 }
@@ -37,27 +38,36 @@ data class Animation(
     val name: String,
     val duration: DurationAsLong,
     val tracks: Map<Long, EntityTracks>
-)
-
-@Serializable
-data class EntityTracks(
-    val entityId: Long,
-    val tracks: Map<String, Track>
-)
-
-@Serializable
-sealed interface Track {
-    val path: String
+) {
+    fun keyFrame(entityId: Long, propertyId: Long, position: Duration, value: Float): Animation {
+        val entityTracks = tracks.getOrElse(entityId) { EntityTracks(emptyMap()) }
+        return copy(
+            tracks = tracks.plus(
+                entityId to entityTracks.keyFrame(
+                    propertyId,
+                    position,
+                    value
+                )
+            )
+        )
+    }
 }
 
 @Serializable
-data class FloatTrack(
-    override val path: String,
-    val keyframes: List<Keyframe<Float>>
-) : Track
+data class EntityTracks(
+    val properties: Map<Long, Track>
+) {
+    fun keyFrame(propertyId: Long, position: Duration, value: Float): EntityTracks {
+        val track = properties.getOrElse(propertyId) { Track(emptyMap()) }
+        return copy(properties = properties.plus(propertyId to track.keyFrame(position, value)))
+    }
+}
 
 @Serializable
-data class Keyframe<T>(
-    val position: DurationAsLong,
-    val value: T,
-)
+data class Track(
+    val keyframes: Map<DurationAsLong, Float>
+) {
+    fun keyFrame(position: Duration, value: Float): Track {
+        return copy(keyframes = keyframes.plus(position to value))
+    }
+}

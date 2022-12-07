@@ -1,8 +1,8 @@
 package io.github.fourlastor.editor.properties
 
+import io.github.fourlastor.data.Entities
 import io.github.fourlastor.data.Entity
 import io.github.fourlastor.data.EntityUpdater
-import io.github.fourlastor.data.LatestProject
 import io.github.fourlastor.editor.state.ViewState
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
@@ -38,7 +38,7 @@ data class PropertiesState(
     }
 }
 
-fun LatestProject.toPropertiesState(viewState: ViewState) = PropertiesState(
+fun toPropertiesState(entities: Entities, viewState: ViewState) = PropertiesState(
     entities = entities.entities.values
         .map { it.toEntity(viewState) }
         .sortedBy { it.id }

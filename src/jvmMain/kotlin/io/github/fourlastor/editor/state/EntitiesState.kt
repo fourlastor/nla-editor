@@ -59,7 +59,7 @@ class ImageState(
 
 fun Entities.toEntitiesState(): EntitiesState {
     return EntitiesState(
-        root = root.groupState(),
+        root = (this[0] as Group).groupState(),
         entities = entities.values.map {
             when (it) {
                 is Group -> it.groupState()

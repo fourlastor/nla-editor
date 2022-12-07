@@ -17,8 +17,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.github.fourlastor.data.Animation
 import io.github.fourlastor.data.Animations
-import io.github.fourlastor.data.LatestProject
-import io.github.fourlastor.data.Project
 import io.github.fourlastor.editor.state.ViewState
 import io.kanro.compose.jetbrains.expui.control.ActionButton
 import io.kanro.compose.jetbrains.expui.control.ComboBox
@@ -32,13 +30,13 @@ import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun AnimationMode(
-    project: LatestProject,
-    viewState: ViewState,
     onAnimationToggle: (enabled: Boolean) -> Unit,
     onAnimationSelected: (id: Long) -> Unit,
     onCreateAnimation: (name: String, duration: Duration) -> Unit,
+    animations: Animations,
+    animationState: ViewState.AnimationState,
 ) {
-    val state by rememberAnimationModeState(viewState, project)
+    val state by rememberAnimationModeState(animationState, animations)
     AnimationModeUi(
         state = state,
         onAnimationToggle = onAnimationToggle,
@@ -131,19 +129,19 @@ data class AnimationModeAnimation(
 
 @Composable
 private fun rememberAnimationModeState(
-    viewState: ViewState,
-    project: Project.V1,
-): State<AnimationModeState> = remember(viewState.animations, project.animations) {
+    animationState: ViewState.AnimationState,
+    animations: Animations,
+): State<AnimationModeState> = remember(animationState, animations.animations) {
     derivedStateOf {
-        when (val animations = viewState.animations) {
+        when (animationState) {
             is ViewState.Disabled -> AnimationModeState.Disabled
             is ViewState.Selecting -> AnimationModeState.Selecting(
-                animations = project.animations.toAnimations()
+                animations = animations.toAnimations()
             )
 
             is ViewState.Selected -> AnimationModeState.Selected(
-                selectedAnimation = project.animations.byId(animations.id).toAnimation(),
-                animations = project.animations.toAnimations()
+                selectedAnimation = animations[animationState.id].toAnimation(),
+                animations = animations.toAnimations()
             )
         }
     }

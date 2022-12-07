@@ -12,16 +12,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import io.github.fourlastor.data.Animations
+import io.github.fourlastor.data.Entities
 import io.github.fourlastor.data.EntityUpdater
-import io.github.fourlastor.data.LatestProject
 import io.github.fourlastor.editor.animationmode.AnimationMode
 import io.github.fourlastor.editor.layers.LayersPane
 import io.github.fourlastor.editor.properties.PropertiesPane
-import io.github.fourlastor.editor.state.EditorState
 import io.github.fourlastor.editor.state.ViewState
 import io.kanro.compose.jetbrains.expui.style.areaBackground
 import kotlinx.coroutines.launch
 import org.jetbrains.skiko.Cursor
+import kotlin.time.Duration
 
 /**
  *  Main UI for the editor, contains the [PreviewPane], [Timeline], and [PropertiesPane].
@@ -32,23 +33,20 @@ import org.jetbrains.skiko.Cursor
 @Composable
 @OptIn(ExperimentalFoundationApi::class)
 fun EditorUi(
-    state: EditorState,
-    project: LatestProject,
+    entities: Entities,
+    animations: Animations,
     entityUpdater: EntityUpdater,
     onAddGroup: (parentId: Long) -> Unit,
-    onDeleteNode: (parentId: Long) -> Unit,
+    onDeleteEntity: (parentId: Long) -> Unit,
     onAddImage: (parentId: Long) -> Unit,
-    onUpdateProject: (project: LatestProject) -> Unit,
+    onCreateAnimation: (name: String, duration: Duration) -> Unit,
 ) {
-    val entities = state.entities
     var viewState: ViewState by remember { mutableStateOf(ViewState.initial()) }
 
     Column(
         modifier = Modifier.fillMaxSize(),
     ) {
         AnimationMode(
-            project = project,
-            viewState = viewState,
             onAnimationToggle = {
                 viewState =
                     if (it) viewState.copy(animations = ViewState.Selecting)
@@ -57,7 +55,9 @@ fun EditorUi(
             onAnimationSelected = {
                 viewState = viewState.copy(animations = ViewState.Selected(it))
             },
-            onCreateAnimation = { name, duration -> onUpdateProject(project.animation(name, duration)) }
+            onCreateAnimation = onCreateAnimation,
+            animations = animations,
+            animationState = viewState.animations,
         )
 
         BoxWithConstraints(
@@ -91,7 +91,7 @@ fun EditorUi(
                         entityUpdater = entityUpdater,
                         onAddGroup = onAddGroup,
                         onAddImage = onAddImage,
-                        onDeleteNode = onDeleteNode,
+                        onDeleteEntity = onDeleteEntity,
                     )
                 }
                 DraggableHandle(Orientation.Horizontal) { horizontalCutPoint += it.y / height }
@@ -129,9 +129,9 @@ fun EditorUi(
                     PropertiesPane(
                         propertyNamesListState = propertyNamesListState,
                         modifier = Modifier.padding(end = 4.dp),
-                        project = project,
                         viewState = viewState,
-                        entityUpdater = entityUpdater
+                        entityUpdater = entityUpdater,
+                        entities = entities,
                     )
                 }
             }

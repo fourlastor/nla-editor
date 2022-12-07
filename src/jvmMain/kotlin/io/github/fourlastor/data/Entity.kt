@@ -1,7 +1,5 @@
 package io.github.fourlastor.data
 
-import androidx.compose.ui.geometry.Offset
-import io.github.fourlastor.system.serializer.SerializableOffset
 import kotlinx.serialization.Serializable
 
 /**
@@ -77,32 +75,29 @@ data class Image(
 }
 
 /**
- * Represents the transform ([translation], [rotation], and [scale]) of an [Entity].
+ * Represents the transform ([x], [y], [rotation], and [scale]) of an [Entity].
  */
 @Serializable
 data class Transform(
-    val translation: SerializableOffset,
-    val rotation: Float,
-    val scale: Float,
-    val pivotOffset: SerializableOffset,
+    val xProperty: PropertyValue,
+    val yProperty: PropertyValue,
+    val rotationProperty: PropertyValue,
+    val scaleProperty: PropertyValue,
 ) {
     val x: Float
-        get() = translation.x
+        get() = xProperty.value
     val y: Float
-        get() = translation.y
+        get() = yProperty.value
 
-    fun x(x: Float) = copy(translation = translation.copy(x = x))
+    val rotation: Float
+        get() = rotationProperty.value
 
-    fun y(y: Float) = copy(translation = translation.copy(y = y))
+    val scale: Float
+        get() = scaleProperty.value
 
-    fun rotation(rotation: Float) = copy(rotation = rotation)
+    fun x(x: Float) = copy(xProperty = xProperty.copy(value = x))
 
-    companion object {
-        val IDENTITY = Transform(
-            translation = Offset.Zero,
-            rotation = 0f,
-            scale = 1f,
-            pivotOffset = Offset.Zero,
-        )
-    }
+    fun y(y: Float) = copy(yProperty = yProperty.copy(value = y))
+
+    fun rotation(rotation: Float) = copy(rotationProperty = rotationProperty.copy(value = rotation))
 }
