@@ -55,6 +55,13 @@ data class Entities(
         )
     }
 
+    /** Remove an image or group. */
+    fun remove(
+        entity: Entity
+    ): Entities {
+        return copy(entities = entities.drop(entities.indexOf(entity)))
+    }
+
     /** Creates a new image, using the next available id. */
     fun image(
         parent: Long,
