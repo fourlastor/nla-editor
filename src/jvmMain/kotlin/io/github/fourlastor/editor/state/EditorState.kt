@@ -65,7 +65,7 @@ fun Entities.toEditorState(): EditorState {
     return EditorState(
             EntitiesState(
                     root = root.groupState(),
-                    entities = entities.map {
+                    entities = entities.values.map {
                         when (it) {
                             is Group -> it.groupState()
                             is Image -> it.imageState()
