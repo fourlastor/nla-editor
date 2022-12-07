@@ -128,8 +128,9 @@ fun EditorUi(
                     DraggableHandle(Orientation.Vertical) { verticalCutPoint += it.x / width }
                     PropertiesPane(
                         propertyNamesListState = propertyNamesListState,
-                        entities = entities,
                         modifier = Modifier.padding(end = 4.dp),
+                        project = project,
+                        viewState = viewState,
                         entityUpdater = entityUpdater
                     )
                 }
