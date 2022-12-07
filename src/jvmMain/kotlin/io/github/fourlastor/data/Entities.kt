@@ -1,4 +1,4 @@
-package io.github.fourlastor.entity
+package io.github.fourlastor.data
 
 import kotlinx.serialization.Serializable
 

@@ -1,9 +1,9 @@
 package io.github.fourlastor.editor.state
 
-import io.github.fourlastor.entity.Entities
-import io.github.fourlastor.entity.Group
-import io.github.fourlastor.entity.Image
-import io.github.fourlastor.entity.Transform
+import io.github.fourlastor.data.Entities
+import io.github.fourlastor.data.Group
+import io.github.fourlastor.data.Image
+import io.github.fourlastor.data.Transform
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 

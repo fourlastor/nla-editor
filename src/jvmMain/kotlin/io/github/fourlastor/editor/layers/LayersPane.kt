@@ -21,6 +21,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.fourlastor.data.EntityType
+import io.github.fourlastor.data.EntityUpdater
 import io.github.fourlastor.editor.TransparentField
 import io.github.fourlastor.editor.icon.MediumIcon
 import io.github.fourlastor.editor.icon.SmallIcon
@@ -29,8 +31,6 @@ import io.github.fourlastor.editor.state.EntityNode
 import io.github.fourlastor.editor.state.EntityState
 import io.github.fourlastor.editor.state.GroupNode
 import io.github.fourlastor.editor.state.ImageNode
-import io.github.fourlastor.entity.EntityType
-import io.github.fourlastor.entity.EntityUpdater
 import io.github.fourlastor.system.Selectable
 import io.kanro.compose.jetbrains.expui.control.ActionButton
 import io.kanro.compose.jetbrains.expui.control.Label

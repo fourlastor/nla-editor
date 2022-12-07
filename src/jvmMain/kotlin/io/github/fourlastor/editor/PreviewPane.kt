@@ -22,11 +22,11 @@ import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.input.pointer.PointerButton
 import androidx.compose.ui.res.loadImageBitmap
 import androidx.compose.ui.unit.IntOffset
+import io.github.fourlastor.data.Transform
 import io.github.fourlastor.editor.state.EntitiesState
 import io.github.fourlastor.editor.state.EntityNode
 import io.github.fourlastor.editor.state.GroupNode
 import io.github.fourlastor.editor.state.ImageNode
-import io.github.fourlastor.entity.Transform
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import java.io.File

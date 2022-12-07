@@ -1,7 +1,7 @@
 package io.github.fourlastor.editor.save
 
 import androidx.compose.runtime.Composable
-import io.github.fourlastor.entity.Entities
+import io.github.fourlastor.data.Entities
 import io.github.fourlastor.system.FileLoadDialog
 import kotlinx.serialization.json.Json
 

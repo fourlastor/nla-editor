@@ -10,11 +10,11 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.ApplicationScope
 import androidx.compose.ui.window.rememberWindowState
+import io.github.fourlastor.data.Entities
+import io.github.fourlastor.data.demoData
 import io.github.fourlastor.editor.save.LoadProject
 import io.github.fourlastor.editor.save.SaveProject
 import io.github.fourlastor.editor.state.toEditorState
-import io.github.fourlastor.entity.Entities
-import io.github.fourlastor.entity.demoData
 import io.kanro.compose.jetbrains.expui.theme.DarkTheme
 import io.kanro.compose.jetbrains.expui.window.JBWindow
 import kotlin.system.exitProcess

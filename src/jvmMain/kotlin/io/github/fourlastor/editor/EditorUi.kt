@@ -12,9 +12,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import io.github.fourlastor.data.EntityUpdater
 import io.github.fourlastor.editor.layers.LayersPane
 import io.github.fourlastor.editor.state.EntitiesState
-import io.github.fourlastor.entity.EntityUpdater
 import io.kanro.compose.jetbrains.expui.style.areaBackground
 import kotlinx.coroutines.launch
 import org.jetbrains.skiko.Cursor

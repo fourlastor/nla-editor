@@ -19,9 +19,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.fourlastor.data.EntityUpdater
 import io.github.fourlastor.editor.state.EntitiesState
 import io.github.fourlastor.editor.state.EntityState
-import io.github.fourlastor.entity.EntityUpdater
 import io.kanro.compose.jetbrains.expui.control.Label
 import io.kanro.compose.jetbrains.expui.style.areaBackground
 import io.kanro.compose.jetbrains.expui.theme.DarkTheme

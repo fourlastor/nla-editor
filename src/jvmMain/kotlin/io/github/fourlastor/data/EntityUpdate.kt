@@ -1,3 +1,3 @@
-package io.github.fourlastor.entity
+package io.github.fourlastor.data
 
 typealias EntityUpdate = (entity: Entity) -> Entity

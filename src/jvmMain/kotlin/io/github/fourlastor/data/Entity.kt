@@ -1,4 +1,4 @@
-package io.github.fourlastor.entity
+package io.github.fourlastor.data
 
 import androidx.compose.ui.geometry.Offset
 import kotlinx.serialization.KSerializer
@@ -34,7 +34,7 @@ sealed interface Entity {
 
 /**
  * A [Group] is an [Entity] which only contains children entities.
- * The children are associated by [parentId], see [Entities.asNode] for accessing them in a tree-like manner.
+ * The children are associated by [parentId].
  */
 @Serializable
 data class Group(
