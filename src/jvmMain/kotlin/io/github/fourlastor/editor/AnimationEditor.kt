@@ -15,7 +15,6 @@ import io.github.fourlastor.data.demoData
 import io.github.fourlastor.editor.save.LoadProject
 import io.github.fourlastor.editor.save.SaveProject
 import io.github.fourlastor.editor.state.EditorState
-import io.github.fourlastor.editor.state.ViewState
 import io.github.fourlastor.editor.state.toEntitiesState
 import io.kanro.compose.jetbrains.expui.theme.DarkTheme
 import io.kanro.compose.jetbrains.expui.window.JBWindow
@@ -28,13 +27,11 @@ import kotlin.system.exitProcess
 fun ApplicationScope.AnimationEditor() {
     /** `state` is the actual editor state, it contains a copy of [Entities]. */
     var project by remember { mutableStateOf(demoData()) }
-    var viewState by remember { mutableStateOf(ViewState.initial()) }
     val entities = project.entities
     val editorState by remember(entities) {
         derivedStateOf {
             EditorState(
                 entities = entities.toEntitiesState(),
-                viewState = viewState,
             )
         }
     }
@@ -69,6 +66,7 @@ fun ApplicationScope.AnimationEditor() {
         }
     ) {
         EditorUi(
+            project = project,
             state = editorState,
             entityUpdater = { id, update ->
                 updateEntities(entities = entities.update(update(entities.byId(id))))
@@ -76,7 +74,7 @@ fun ApplicationScope.AnimationEditor() {
             onAddGroup = { updateEntities(entities.group(it, "Group")) },
             onDeleteNode = { updateEntities(entities.remove(it)) },
             onAddImage = { newImageParentId = it },
-            onToggleAnimationMode = { viewState = viewState.copy(animations = it) }
+            onUpdateProject = { project = it }
         )
     }
     if (loadRequested) {

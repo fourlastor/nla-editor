@@ -9,7 +9,7 @@ data class ViewState(
     sealed class Enabled : AnimationState()
 
     object Selecting : Enabled()
-    class Selected(val name: String) : Enabled()
+    class Selected(val id: Long) : Enabled()
 
 
     companion object {

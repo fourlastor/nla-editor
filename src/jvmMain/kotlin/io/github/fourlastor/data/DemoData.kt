@@ -2,9 +2,9 @@ package io.github.fourlastor.data
 
 import java.io.File
 
-fun demoData(): VersionedProject.V1 {
+fun demoData(): Project.V1 {
     val imgPath = File("src/jvmMain/resources/player.png").absolutePath
-    return Entities.empty()
+    val entities = Entities.empty()
         .image(0, "Hero", imgPath)
         .group(0, "Group")
         .image(
@@ -13,5 +13,6 @@ fun demoData(): VersionedProject.V1 {
                 scale = 0.4f,
             )
         )
-        .let { VersionedProject.V1(it) }
+    val animations: Animations = Animations.empty()
+    return Project.V1(entities, animations)
 }

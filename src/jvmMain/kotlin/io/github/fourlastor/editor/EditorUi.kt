@@ -13,6 +13,7 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import io.github.fourlastor.data.EntityUpdater
+import io.github.fourlastor.data.LatestProject
 import io.github.fourlastor.editor.layers.LayersPane
 import io.github.fourlastor.editor.properties.PropertiesPane
 import io.github.fourlastor.editor.state.EditorState
@@ -31,18 +32,32 @@ import org.jetbrains.skiko.Cursor
 @OptIn(ExperimentalFoundationApi::class)
 fun EditorUi(
     state: EditorState,
+    project: LatestProject,
     entityUpdater: EntityUpdater,
     onAddGroup: (parentId: Long) -> Unit,
     onDeleteNode: (parentId: Long) -> Unit,
     onAddImage: (parentId: Long) -> Unit,
-    onToggleAnimationMode: (enabled: ViewState.AnimationState) -> Unit,
+    onUpdateProject: (project: LatestProject) -> Unit,
 ) {
     val entities = state.entities
-    val viewState = state.viewState
+    var viewState: ViewState by remember { mutableStateOf(ViewState.initial()) }
+
     Column(
         modifier = Modifier.fillMaxSize(),
     ) {
-        AnimationMode(viewState.animations, onToggleAnimationMode)
+        AnimationMode(
+            project = project,
+            viewState = viewState,
+            onAnimationToggle = {
+                viewState =
+                    if (it) viewState.copy(animations = ViewState.Selecting)
+                    else viewState.copy(animations = ViewState.Disabled)
+            },
+            onAnimationSelected = {
+                viewState = viewState.copy(animations = ViewState.Selected(it))
+            },
+            onCreateAnimation = { name, duration -> onUpdateProject(project.animation(name, duration)) }
+        )
 
         BoxWithConstraints(
             modifier = Modifier.fillMaxSize()
@@ -95,7 +110,7 @@ fun EditorUi(
                         .fillMaxHeight()
                         .scrollable(scrollState, orientation = Orientation.Vertical)
                 ) {
-                    if (viewState.animations is ViewState.Enabled) {
+                    if (viewState.animations is ViewState.Selected) {
                         Timeline(
                             entities = entities,
                             propertyListState = propertyKeysListState,
