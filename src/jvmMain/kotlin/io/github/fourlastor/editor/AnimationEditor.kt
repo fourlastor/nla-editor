@@ -25,8 +25,9 @@ import kotlin.system.exitProcess
          */
 fun ApplicationScope.AnimationEditor() {
     /** `state` is the actual editor state, it contains a copy of [Entities]. */
-    var dataState by remember { mutableStateOf(demoData()) }
-    val editorState by remember(dataState) { derivedStateOf { dataState.toEditorState() } }
+    var project by remember { mutableStateOf(demoData()) }
+    val entities = project.entities
+    val editorState by remember(entities) { derivedStateOf { entities.toEditorState() } }
 
     /** Local state, it's used to display or not the save popup. */
     var saveRequested by remember { mutableStateOf(false) }
@@ -39,7 +40,7 @@ fun ApplicationScope.AnimationEditor() {
 
 
     fun updateEntities(entities: Entities) {
-        dataState = entities
+        project = project.copy(entities = entities)
     }
 
     JBWindow(
@@ -58,18 +59,18 @@ fun ApplicationScope.AnimationEditor() {
         }
     ) {
         EditorUi(
-                entities = editorState.entities,
-                entityUpdater = { id, update ->
-                    updateEntities(entities = dataState.update(update(dataState.byId(id))))
-                },
-                onAddGroup = { updateEntities(dataState.group(it, "Group")) },
-                onDeleteNode = { updateEntities(dataState.remove(it)) },
+            entities = editorState.entities,
+            entityUpdater = { id, update ->
+                updateEntities(entities = entities.update(update(entities.byId(id))))
+            },
+            onAddGroup = { updateEntities(entities.group(it, "Group")) },
+            onDeleteNode = { updateEntities(entities.remove(it)) },
         ) { newImageParentId = it }
     }
     if (loadRequested) {
         LoadProject(
             onSuccess = {
-                updateEntities(it)
+                project = it
                 loadRequested = false
             },
             onFailure = {
@@ -81,23 +82,23 @@ fun ApplicationScope.AnimationEditor() {
     }
     if (saveRequested) {
         SaveProject(
-                entities = dataState,
-                onSuccess = {
-                    println("Saved project successfully.")
-                    saveRequested = false
-                },
-                onFailure = {
-                    println("Failed to save because $it")
-                    saveRequested = false
-                },
-                onCancel = { saveRequested = false }
+            project = project,
+            onSuccess = {
+                println("Saved project successfully.")
+                saveRequested = false
+            },
+            onFailure = {
+                println("Failed to save because $it")
+                saveRequested = false
+            },
+            onCancel = { saveRequested = false }
         )
     }
 
     AddImage(
         newImageParentId,
         onAddImage = { parentId, name, path ->
-            updateEntities(dataState.image(parentId, name, path))
+            updateEntities(entities.image(parentId, name, path))
             newImageParentId = null
         },
         onCancel = { newImageParentId = null }

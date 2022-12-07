@@ -1,13 +1,13 @@
 package io.github.fourlastor.editor.save
 
 import androidx.compose.runtime.Composable
-import io.github.fourlastor.data.Entities
+import io.github.fourlastor.data.VersionedProject
 import io.github.fourlastor.system.FileLoadDialog
 import kotlinx.serialization.json.Json
 
 @Composable
 fun LoadProject(
-    onSuccess: (entities: Entities) -> Unit,
+    onSuccess: (project: VersionedProject.V1) -> Unit,
     onFailure: (cause: Throwable) -> Unit,
     onCancel: () -> Unit,
 ) {
@@ -15,9 +15,9 @@ fun LoadProject(
         if (it != null) {
             val result = runCatching {
                 Json.decodeFromString(
-                    Entities.serializer(),
+                    VersionedProject.serializer(),
                     it.readText()
-                )
+                ).migrateToLatest()
             }
 
             result.onSuccess(onSuccess)
@@ -25,4 +25,9 @@ fun LoadProject(
         }
         onCancel()
     }
+}
+
+/** This will be useful in the future, to version the projects. */
+private fun VersionedProject.migrateToLatest(): VersionedProject.V1 = when (this) {
+    is VersionedProject.V1 -> this
 }

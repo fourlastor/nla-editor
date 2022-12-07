@@ -2,7 +2,7 @@ package io.github.fourlastor.data
 
 import java.io.File
 
-fun demoData(): Entities {
+fun demoData(): VersionedProject.V1 {
     val imgPath = File("src/jvmMain/resources/player.png").absolutePath
     return Entities.empty()
         .image(0, "Hero", imgPath)
@@ -13,4 +13,5 @@ fun demoData(): Entities {
                 scale = 0.4f,
             )
         )
+        .let { VersionedProject.V1(it) }
 }
