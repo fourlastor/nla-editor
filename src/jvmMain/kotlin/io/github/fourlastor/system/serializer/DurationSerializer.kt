@@ -1,6 +1,7 @@
 package io.github.fourlastor.system.serializer
 
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -25,3 +26,5 @@ object DurationSerializer : KSerializer<Duration> {
         encoder.encodeLong(value.inWholeMilliseconds)
     }
 }
+
+typealias DurationAsLong = @Serializable(DurationSerializer::class) Duration

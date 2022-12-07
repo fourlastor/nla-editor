@@ -1,7 +1,7 @@
 package io.github.fourlastor.data
 
 import androidx.compose.ui.geometry.Offset
-import io.github.fourlastor.system.serializer.OffsetSerializer
+import io.github.fourlastor.system.serializer.SerializableOffset
 import kotlinx.serialization.Serializable
 
 /**
@@ -81,12 +81,10 @@ data class Image(
  */
 @Serializable
 data class Transform(
-    @Serializable(with = OffsetSerializer::class)
-    val translation: Offset,
+    val translation: SerializableOffset,
     val rotation: Float,
     val scale: Float,
-    @Serializable(with = OffsetSerializer::class)
-    val pivotOffset: Offset,
+    val pivotOffset: SerializableOffset,
 ) {
     val x: Float
         get() = translation.x

@@ -22,7 +22,6 @@ object OffsetSerializer : KSerializer<Offset> {
         val surrogate = OffsetSurrogate(value.x, value.y)
         encoder.encodeSerializableValue(OffsetSurrogate.serializer(), surrogate)
     }
-
 }
 
 /**
@@ -35,3 +34,5 @@ private data class OffsetSurrogate(
     val x: Float,
     val y: Float,
 )
+
+typealias SerializableOffset = @Serializable(OffsetSerializer::class) Offset
