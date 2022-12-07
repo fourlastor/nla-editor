@@ -1,4 +1,4 @@
-package io.github.fourlastor.editor
+package io.github.fourlastor.editor.animationmode
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row

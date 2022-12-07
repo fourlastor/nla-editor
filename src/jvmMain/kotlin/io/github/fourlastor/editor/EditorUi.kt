@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import io.github.fourlastor.data.EntityUpdater
 import io.github.fourlastor.data.LatestProject
+import io.github.fourlastor.editor.animationmode.AnimationMode
 import io.github.fourlastor.editor.layers.LayersPane
 import io.github.fourlastor.editor.properties.PropertiesPane
 import io.github.fourlastor.editor.state.EditorState
