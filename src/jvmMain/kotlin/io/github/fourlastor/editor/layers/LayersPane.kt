@@ -82,20 +82,20 @@ private fun AddEntitiesButtons(
     onAddImage: (parentId: Long) -> Unit,
     onDeleteNode: (parentId: Long) -> Unit,
 ) {
-    if (selectedEntity != null && selectedEntity.entity.isNotRoot()) {
+    if (selectedEntity == null) return
+    if (selectedEntity is GroupNode) {
         AddButton(
-            parentId = selectedEntity.entity.id, type = EntityType.DELETE, onEntityAdd = onDeleteNode
+                parentId = selectedEntity.entity.id, type = EntityType.GROUP, onEntityAdd = onAddGroup
+        )
+        AddButton(
+                parentId = selectedEntity.entity.id, type = EntityType.IMAGE, onEntityAdd = onAddImage
         )
     }
-    if (selectedEntity !is GroupNode) {
-        return
+    if (selectedEntity.entity.isNotRoot()) {
+        AddButton(
+                parentId = selectedEntity.entity.id, type = EntityType.DELETE, onEntityAdd = onDeleteNode
+        )
     }
-    AddButton(
-        parentId = selectedEntity.entity.id, type = EntityType.GROUP, onEntityAdd = onAddGroup
-    )
-    AddButton(
-        parentId = selectedEntity.entity.id, type = EntityType.IMAGE, onEntityAdd = onAddImage
-    )
 }
 
 private fun EntityState.isNotRoot() = id != 0L
@@ -147,11 +147,21 @@ private fun GroupNodeView(
             selected = group == selectedEntity,
             onSelected = { onEntitySelected(group) },
         ) {
+
+            //remember collapsed
+
             Row(
                 horizontalArrangement = Arrangement.spacedBy(2.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth().padding(4.dp)
             ) {
+                // Expand/Collapse button
+                if (group.entity.isNotRoot()) {
+                    AddButton(
+                            parentId = group.entity.id, type = EntityType.COLLAPSE,
+                            onEntityAdd = { id -> entityUpdater(id) { entity -> entity.collapsed(!entity.collapsed) } }
+                    )
+                }
                 EntityName("icons/group.svg", group.entity, entityUpdater)
             }
         }
@@ -159,14 +169,16 @@ private fun GroupNodeView(
             verticalArrangement = Arrangement.spacedBy(2.dp),
             modifier = Modifier.padding(start = 16.dp).fillMaxWidth(),
         ) {
-            group.children.forEach {
-                EntityTreeView(
-                        it,
-                        selectedEntity,
-                        onEntitySelected,
-                        Modifier.fillMaxWidth(),
-                        entityUpdater,
-                )
+            if (!group.entity.collapsed) {
+                group.children.forEach {
+                    EntityTreeView(
+                            it,
+                            selectedEntity,
+                            onEntitySelected,
+                            Modifier.fillMaxWidth(),
+                            entityUpdater,
+                    )
+                }
             }
         }
     }

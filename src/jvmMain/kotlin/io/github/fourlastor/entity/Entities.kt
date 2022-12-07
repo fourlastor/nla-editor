@@ -32,6 +32,7 @@ data class Entities(
                 parentId = parent,
                 name = name,
                 transform = transform,
+                collapsed = false,
             )
         )
     }
@@ -59,6 +60,7 @@ data class Entities(
                         name = name,
                         transform = transform,
                         path = path,
+                        collapsed = false,
                 ),
         )
     }
@@ -79,6 +81,7 @@ data class Entities(
                         null,
                         "Root",
                         Transform.IDENTITY,
+                        collapsed = false,
                 )
         )
     }
