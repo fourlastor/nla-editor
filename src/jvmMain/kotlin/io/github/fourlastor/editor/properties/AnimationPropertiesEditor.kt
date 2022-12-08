@@ -18,6 +18,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
@@ -82,9 +83,7 @@ fun AnimationPropertiesEditor(
             AnimationPropertyField(
                 value = "${position.inWholeMilliseconds}",
                 validator = { it.toLongOrNull()?.milliseconds },
-                onUpdate = {
-                    onSeek(state.selectedAnimation.id, it)
-                }
+                onUpdate = { onSeek(state.selectedAnimation.id, it) }
             )
             AnimationPropertyField(
                 value = duration.inWholeMilliseconds.toString(),
@@ -122,7 +121,7 @@ private fun <T> AnimationPropertyField(
                 }
             }
             .onKeyEvent { event ->
-                if (isDirty && event.key == Key.Enter && event.type == KeyEventType.KeyUp) {
+                if (isDirty && event.isEnterJustReleased) {
                     val validated = validator(currentValue)
                     validated
                         ?.also(onUpdate)
@@ -134,6 +133,10 @@ private fun <T> AnimationPropertyField(
             }
     )
 }
+
+@OptIn(ExperimentalComposeUiApi::class)
+private val KeyEvent.isEnterJustReleased
+    get() = (key == Key.Enter || key == Key.NumPadEnter) && type == KeyEventType.KeyUp
 
 private fun Animations.toState(animationState: ViewState.Enabled): AnimationPropertiesState {
     val selectedAnimation: AnimationInEditor = if (animationState is ViewState.Selected) {

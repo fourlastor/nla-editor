@@ -190,7 +190,6 @@ private fun Scrubber(
             onDragEnd = { onDrag(offset) }
         ) {
             val delta = it.x / trackWidthPx
-            println(delta)
             offset += delta
         }
     }
