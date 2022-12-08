@@ -13,8 +13,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerButton
 import androidx.compose.ui.layout.*
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import io.github.fourlastor.data.Animations
 import io.github.fourlastor.data.Entities
 import io.github.fourlastor.editor.state.toEntitiesState
 import io.kanro.compose.jetbrains.expui.control.Label
@@ -33,6 +35,8 @@ fun Timeline(
     entities: Entities,
     propertyListState: LazyListState,
     modifier: Modifier = Modifier,
+    animationId: Long,
+    animations: Animations,
 ) {
     val entitiesState by remember(entities) { mutableStateOf(entities.toEntitiesState()) }
     val secondWidth = 300.dp
@@ -64,59 +68,9 @@ fun Timeline(
                         }
                     }
             ) {
-                Row(
-                    modifier = Modifier
-                        .width(trackWidth)
-                        .zIndex(2f)
-                ) {
-                    var scrubberOffset by remember { mutableStateOf(0f) }
-                    Spacer(modifier = Modifier.fillMaxWidth(scrubberOffset))
-                    DraggableHandle(
-                        orientation = Orientation.Vertical,
-                        color = Color.Red,
-                        size = 2.dp
-                    ) {
-                        val delta = it.x / trackWidthPx
-                        scrubberOffset += delta
-                    }
-                }
+                Scrubber(trackWidth, trackWidthPx)
                 Column(modifier = Modifier.fillMaxSize()) {
-                    Box {
-                        Row {
-                            repeat(duration.inWholeSeconds.toInt()) { counter ->
-                                Box(
-                                    modifier = Modifier.width(secondWidth)
-                                        .height(40.dp)
-                                        .padding(2.dp)
-                                ) {
-                                    Label(counter.toString())
-                                }
-                            }
-                        }
-                        val color = LocalAreaColors.current.text
-                        Canvas(modifier = Modifier.fillMaxWidth().height(50.dp)) {
-                            val secondOffset = secondWidth.toPx()
-                            for (s in 0 until duration.inWholeSeconds) {
-                                val xOffset = s * secondOffset
-                                drawLine(
-                                    color = color,
-                                    start = Offset(xOffset, 0f),
-                                    end = Offset(xOffset, 50f),
-                                    strokeWidth = 2f,
-                                )
-
-                                for (ms in 1 until 10) {
-                                    val msOffset = ms / 10f * secondOffset
-                                    drawLine(
-                                        color = color,
-                                        start = Offset(xOffset + msOffset, 0f),
-                                        end = Offset(xOffset + msOffset, 15f),
-                                        strokeWidth = 1f,
-                                    )
-                                }
-                            }
-                        }
-                    }
+                    TimeIndicator(duration, secondWidth)
                     LazyColumn(
                         modifier = Modifier.width(trackWidth)
                             .padding(vertical = 4.dp),
@@ -154,6 +108,65 @@ fun Timeline(
                     }
                 }
             }
+        }
+    }
+}
+
+private fun TimeIndicator(duration: Duration, secondWidth: Dp) {
+    Box {
+        Row {
+            repeat(duration.inWholeSeconds.toInt()) { counter ->
+                Box(
+                    modifier = Modifier.width(secondWidth)
+                        .height(40.dp)
+                        .padding(2.dp)
+                ) {
+                    Label(counter.toString())
+                }
+            }
+        }
+        val color = LocalAreaColors.current.text
+        Canvas(modifier = Modifier.fillMaxWidth().height(50.dp)) {
+            val secondOffset = secondWidth.toPx()
+            for (s in 0 until duration.inWholeSeconds) {
+                val xOffset = s * secondOffset
+                drawLine(
+                    color = color,
+                    start = Offset(xOffset, 0f),
+                    end = Offset(xOffset, 50f),
+                    strokeWidth = 2f,
+                )
+
+                for (ms in 1 until 10) {
+                    val msOffset = ms / 10f * secondOffset
+                    drawLine(
+                        color = color,
+                        start = Offset(xOffset + msOffset, 0f),
+                        end = Offset(xOffset + msOffset, 15f),
+                        strokeWidth = 1f,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun Scrubber(trackWidth: Dp, trackWidthPx: Float) {
+    Row(
+        modifier = Modifier
+            .width(trackWidth)
+            .zIndex(2f)
+    ) {
+        var scrubberOffset by remember { mutableStateOf(0f) }
+        Spacer(modifier = Modifier.fillMaxWidth(scrubberOffset))
+        DraggableHandle(
+            orientation = Orientation.Vertical,
+            color = Color.Red,
+            size = 2.dp
+        ) {
+            val delta = it.x / trackWidthPx
+            scrubberOffset += delta
         }
     }
 }

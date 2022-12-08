@@ -111,7 +111,8 @@ fun EditorUi(
                         .fillMaxHeight()
                         .scrollable(scrollState, orientation = Orientation.Vertical)
                 ) {
-                    if (viewState.animations is ViewState.Selected) {
+                    val animationState = viewState.animations
+                    if (animationState is ViewState.Selected) {
                         Timeline(
                             entities = entities,
                             propertyListState = propertyKeysListState,
@@ -121,6 +122,8 @@ fun EditorUi(
                                 .padding(start = 4.dp)
                                 .areaBackground()
                                 .zIndex(2f),
+                            animationId = animationState.id,
+                            animations = animations,
                         )
                     } else {
                         Spacer(modifier = Modifier.fillMaxWidth(verticalCutPoint).fillMaxHeight())
