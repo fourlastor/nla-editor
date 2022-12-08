@@ -1,6 +1,7 @@
 package io.github.fourlastor.editor.state
 
 import io.github.fourlastor.data.Entities
+import io.github.fourlastor.data.Frame
 import io.github.fourlastor.data.Group
 import io.github.fourlastor.data.Image
 import io.github.fourlastor.data.Transform
@@ -55,6 +56,7 @@ class ImageState(
     transform: Transform,
     val path: String,
     collapsed: Boolean,
+    val frame: Frame,
 ) : EntityState(id, parentId, transform, name, collapsed)
 
 fun Entities.toEntitiesState(): EntitiesState {
@@ -71,4 +73,4 @@ fun Entities.toEntitiesState(): EntitiesState {
 
 private fun Group.groupState() = GroupState(id, parentId, transform, name, collapsed)
 private fun Image.imageState() =
-    ImageState(id, parentId, name, transform, path, collapsed)
+    ImageState(id, parentId, name, transform, path, collapsed, frame)
