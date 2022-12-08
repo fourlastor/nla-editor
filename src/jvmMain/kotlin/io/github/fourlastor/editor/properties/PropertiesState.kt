@@ -30,7 +30,7 @@ data class PropertiesState(
         val value: Float,
         val animationId: Long,
         val entityId: Long,
-        val trackLength: Duration,
+        val trackPosition: Duration,
     ) : Property(id, label)
 
     class ReadonlyFloatProperty(
@@ -111,7 +111,7 @@ private fun Entity.animationProperty(
         value = value.value,
         animationId = viewState.id,
         entityId = id,
-        trackLength = animations[viewState.id].duration
+        trackPosition = viewState.trackPosition
     )
 } else {
     PropertiesState.ReadonlyFloatProperty(

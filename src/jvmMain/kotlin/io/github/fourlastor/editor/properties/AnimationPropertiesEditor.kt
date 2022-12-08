@@ -1,4 +1,4 @@
-package io.github.fourlastor.editor
+package io.github.fourlastor.editor.properties
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -130,13 +130,13 @@ private fun <T> AnimationPropertyField(
     )
 }
 
-private fun Animations.toState(animationState: ViewState.Enabled): AnimationEditorState {
+private fun Animations.toState(animationState: ViewState.Enabled): AnimationPropertiesState {
     val selectedAnimation: AnimationInEditor = if (animationState is ViewState.Selected) {
         this[animationState.id].toAnimation()
     } else {
         None
     }
-    return AnimationEditorState(
+    return AnimationPropertiesState(
         selectedAnimation,
         animations = animations.values.map { it.toAnimation() }.toImmutableList()
     )
@@ -146,7 +146,7 @@ private fun DataAnimation.toAnimation(): Animation {
     return Animation(id, name, duration)
 }
 
-private data class AnimationEditorState(
+private data class AnimationPropertiesState(
     val selectedAnimation: AnimationInEditor,
     val animations: ImmutableList<Animation>,
 )

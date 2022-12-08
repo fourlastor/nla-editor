@@ -14,6 +14,7 @@ import io.github.fourlastor.data.Entities
 import io.github.fourlastor.data.EntityUpdater
 import io.github.fourlastor.editor.animationmode.EditorMode
 import io.github.fourlastor.editor.layers.LayersPane
+import io.github.fourlastor.editor.properties.AnimationPropertiesEditor
 import io.github.fourlastor.editor.properties.PropertiesPane
 import io.github.fourlastor.editor.state.ViewState
 import io.github.fourlastor.editor.timeline.Timeline
@@ -46,7 +47,6 @@ fun EditorUi(
     val timeTrackHeight = remember { 50.dp }
     val timeIndicatorHeight = remember { timeTrackHeight + timelineScrollbarHeight }
     val animationState = viewState.animations
-    var trackPosition by remember(animationState) { mutableStateOf(0f) }
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -92,7 +92,6 @@ fun EditorUi(
                         )
                         if (animationState is ViewState.Selected) {
                             Timeline(
-                                duration = animations[animationState.id].duration,
                                 entities = entities,
                                 propertyListState = listState,
                                 modifier = Modifier
@@ -103,9 +102,12 @@ fun EditorUi(
                                 animationId = animationState.id,
                                 animations = animations,
                                 scrollbarHeight = timelineScrollbarHeight,
-                                timeTrackHeight = timeTrackHeight,
-                                onSeek = { trackPosition = it }
-                            )
+                                timeTrackHeight = timeTrackHeight
+                            ) {
+                                viewState = viewState.copy(
+                                    animations = animationState.copy(trackPosition = it)
+                                )
+                            }
                         }
                     }
                 }
@@ -128,7 +130,6 @@ fun EditorUi(
                         entityUpdater = entityUpdater,
                         entities = entities,
                         onAddKeyFrame = onAddKeyFrame,
-                        trackPosition = { trackPosition },
                         animations = animations,
                     )
                 }

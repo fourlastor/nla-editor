@@ -1,5 +1,7 @@
 package io.github.fourlastor.editor.state
 
+import kotlin.time.Duration
+
 data class ViewState(
     val animations: AnimationState,
 ) {
@@ -9,7 +11,10 @@ data class ViewState(
     sealed class Enabled : AnimationState()
 
     object Selecting : Enabled()
-    class Selected(val id: Long) : Enabled()
+    data class Selected(
+        val id: Long,
+        val trackPosition: Duration = Duration.ZERO
+    ) : Enabled()
 
 
     companion object {

@@ -20,6 +20,8 @@ import io.github.fourlastor.data.Animations
 import io.github.fourlastor.data.Entities
 import io.github.fourlastor.editor.DraggableHandle
 import io.github.fourlastor.editor.KeyFrame
+import io.github.fourlastor.system.extension.roundToMilliseconds
+import io.github.fourlastor.system.extension.scale
 import io.kanro.compose.jetbrains.expui.control.Label
 import io.kanro.compose.jetbrains.expui.style.LocalAreaColors
 import io.kanro.compose.jetbrains.expui.theme.DarkTheme
@@ -30,7 +32,6 @@ import kotlin.time.Duration
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Timeline(
-    duration: Duration,
     entities: Entities,
     propertyListState: LazyListState,
     modifier: Modifier = Modifier,
@@ -38,7 +39,7 @@ fun Timeline(
     animations: Animations,
     scrollbarHeight: Dp,
     timeTrackHeight: Dp,
-    onSeek: (offset: Float) -> Unit,
+    onSeek: (position: Duration) -> Unit,
 ) {
     val state by rememberTimelineState(
         entities,
@@ -48,7 +49,7 @@ fun Timeline(
     val secondWidth = 300.dp
     val horizontalScrollState = rememberScrollState(0)
     val coroutineScope = rememberCoroutineScope()
-    val trackWidth = secondWidth * duration.inWholeMilliseconds.toInt() / 1000
+    val trackWidth = secondWidth * state.duration.inWholeMilliseconds.toInt() / 1000
 
     Column(modifier = modifier) {
         HorizontalScrollbar(
@@ -80,10 +81,11 @@ fun Timeline(
                     scrubberOffset = scrubberOffset,
                 ) {
                     scrubberOffset += it / trackWidthPx
-                    onSeek(scrubberOffset)
+                    val position = state.duration.scale(scrubberOffset).roundToMilliseconds()
+                    onSeek(position)
                 }
                 Column(modifier = Modifier.fillMaxSize()) {
-                    TimeIndicator(duration, secondWidth, timeTrackHeight)
+                    TimeIndicator(state.duration, secondWidth, timeTrackHeight)
                     LazyColumn(
                         modifier = Modifier.width(trackWidth)
                             .padding(vertical = scrollbarHeight),
@@ -102,7 +104,7 @@ fun Timeline(
                                 )
 
                                 is Track -> FrameTrack(
-                                    duration = duration,
+                                    duration = state.duration,
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
                                     element.keyFrames.forEach { (location, _) ->
