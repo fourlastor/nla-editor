@@ -5,6 +5,7 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.ImageBitmap
 import io.github.fourlastor.editor.loadImageFromPath
 import io.github.fourlastor.entity.Entities
+import io.github.fourlastor.entity.Frame
 import io.github.fourlastor.entity.Group
 import io.github.fourlastor.entity.Image
 import io.github.fourlastor.entity.Transform
@@ -46,6 +47,7 @@ sealed class EntityState(
         val transform: Transform,
         val name: String,
         val collapsed: Boolean,
+        val frame: Frame,
 )
 
 class GroupState(
@@ -54,7 +56,8 @@ class GroupState(
         transform: Transform,
         name: String,
         collapsed: Boolean,
-) : EntityState(id, parentId, transform, name, collapsed)
+        frame: Frame,
+) : EntityState(id, parentId, transform, name, collapsed, frame)
 
 class ImageState(
         id: Long,
@@ -63,7 +66,8 @@ class ImageState(
         collapsed: Boolean,
         val path: String,
         transform: Transform,
-) : EntityState(id, parentId, transform, name, collapsed) {
+        frame: Frame,
+) : EntityState(id, parentId, transform, name, collapsed, frame) {
 
     init {
         transform.region = Rect(
@@ -89,7 +93,7 @@ fun Entities.toEditorState(): EditorState {
     )
 }
 
-private fun Group.groupState() = GroupState(id, parentId, transform, name, collapsed)
+private fun Group.groupState() = GroupState(id, parentId, transform, name, collapsed, frame)
 
 private fun Image.imageState() =
-        ImageState(id, parentId, name, collapsed, path, transform)
+        ImageState(id, parentId, name, collapsed, path, transform, frame)

@@ -27,6 +27,7 @@ import io.github.fourlastor.entity.EntityUpdater
 import io.kanro.compose.jetbrains.expui.control.Label
 import io.kanro.compose.jetbrains.expui.style.areaBackground
 import io.kanro.compose.jetbrains.expui.theme.DarkTheme
+import kotlin.math.pow
 
 @Composable
 fun PropertiesPane(
@@ -81,12 +82,25 @@ fun PropertiesPane(
 
                     if (entity is ImageState) {
                         Property(
-                                "Rows",
-                                (loadImageFromPath(entity.path).height / entity.transform.region.height).toString(),
-                                { it.toFloatOrNull() ?: 0f },
-                                { value -> entityUpdater(entity.id) {
-                                    it.transform.region(Rect.Zero)
-                                } }
+                            "Rows",
+                            entity.frame.rows.toString(),
+                            { it.toIntOrNull() ?: 0 },
+                            { value -> entityUpdater(entity.id) {
+                                it.frame(value.toInt(), it.frame.columns, it.frame.frameNumber)
+                                println(value)
+                                println(it.frame.toString())
+                                val newHeight = loadImageFromPath(entity.path).height / it.frame.rows
+                                val newTop = newHeight * (it.frame.frameNumber / it.frame.columns)
+                                val newBottom = newTop + newHeight
+                                it.region(Rect(
+                                        left = it.transform.region.left,
+                                        top = newTop.toFloat(),
+                                        right = it.transform.region.right,
+                                        bottom = newBottom.toFloat()
+                                ))
+                                println(it.transform.region.toString())
+                                it
+                            } }
                         )
                     }
 

@@ -33,6 +33,7 @@ data class Entities(
                 name = name,
                 transform = transform,
                 collapsed = false,
+                frame = Frame(1, 1, 0),
             )
         )
     }
@@ -61,6 +62,7 @@ data class Entities(
                         transform = transform,
                         path = path,
                         collapsed = false,
+                        frame = Frame(1, 1, 0),
                 ),
         )
     }
@@ -82,6 +84,7 @@ data class Entities(
                         "Root",
                         Transform.IDENTITY,
                         collapsed = false,
+                        frame = Frame(1, 1, 0),
                 )
         )
     }

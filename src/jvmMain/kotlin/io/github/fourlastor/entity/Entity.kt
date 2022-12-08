@@ -25,12 +25,15 @@ sealed interface Entity {
     fun rotation(rotation: Float): Entity
     fun name(name: String): Entity
     fun collapsed(collapsed: Boolean): Entity
+    fun region(rect: Rect): Entity
+    fun frame(rows: Int, columns: Int, frameNumber: Int): Entity
 
     val id: Long
     val parentId: Long?
     val transform: Transform
     val name: String
     val collapsed: Boolean
+    val frame: Frame
 }
 
 /**
@@ -44,6 +47,7 @@ data class Group(
     override val name: String = "Group",
     override val transform: Transform,
     override val collapsed: Boolean,
+    override val frame: Frame,
 ) : Entity {
 
     override fun x(x: Float) = copy(transform = transform.x(x))
@@ -54,6 +58,8 @@ data class Group(
 
     override fun name(name: String) = copy(name = name)
     override fun collapsed(collapsed: Boolean) = copy(collapsed = collapsed)
+    override fun region(rect: Rect) = copy(transform = transform.region(rect))
+    override fun frame(rows: Int, columns: Int, frameNumber: Int) = copy(frame = Frame(rows, columns, frameNumber))
 }
 
 /**
@@ -68,6 +74,7 @@ data class Image(
     override val transform: Transform,
     override val collapsed: Boolean,
     val path: String,
+    override val frame: Frame,
 ) : Entity {
 
     override fun x(x: Float) = copy(transform = transform.x(x))
@@ -77,9 +84,17 @@ data class Image(
     override fun rotation(rotation: Float) = copy(transform = transform.rotation(rotation))
 
     override fun name(name: String) = copy(name = name)
-
     override fun collapsed(collapsed: Boolean) = copy(collapsed = collapsed)
+    override fun region(rect: Rect) = copy(transform = transform.region(rect))
+    override fun frame(rows: Int, columns: Int, frameNumber: Int) = copy(frame = Frame(rows, columns, frameNumber))
 }
+
+@Serializable
+data class Frame(
+    val rows: Int = 1,
+    val columns: Int = 1,
+    val frameNumber: Int = 0,
+)
 
 /**
  * Represents the transform ([translation], [rotation], and [scale]) of an [Entity].
