@@ -86,20 +86,25 @@ fun PropertiesPane(
                             entity.frame.rows.toString(),
                             { it.toIntOrNull() ?: 0 },
                             { value -> entityUpdater(entity.id) {
-                                it.frame(value.toInt(), it.frame.columns, it.frame.frameNumber)
+                                var newEntity = it.frame(value.toInt(), it.frame.columns, it.frame.frameNumber)
                                 println(value)
-                                println(it.frame.toString())
-                                val newHeight = loadImageFromPath(entity.path).height / it.frame.rows
-                                val newTop = newHeight * (it.frame.frameNumber / it.frame.columns)
+                                println(newEntity.frame.toString())
+                                val newHeight = loadImageFromPath(entity.path).height / newEntity.frame.rows
+                                val newTop = newHeight * (newEntity.frame.frameNumber / newEntity.frame.columns)
                                 val newBottom = newTop + newHeight
-                                it.region(Rect(
-                                        left = it.transform.region.left,
+                                println(newHeight)
+                                println(newTop)
+                                println(newBottom)
+                                var newNewEntity = newEntity.region(Rect(
+                                        left = newEntity.transform.region.left,
                                         top = newTop.toFloat(),
-                                        right = it.transform.region.right,
+                                        right = newEntity.transform.region.right,
                                         bottom = newBottom.toFloat()
                                 ))
-                                println(it.transform.region.toString())
-                                it
+                                println(newNewEntity.transform.region.toString())
+                                println(newNewEntity.transform.region.width)
+                                println(newNewEntity.transform.region.height)
+                                newNewEntity
                             } }
                         )
                     }
