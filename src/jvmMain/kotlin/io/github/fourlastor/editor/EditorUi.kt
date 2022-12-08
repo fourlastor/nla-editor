@@ -30,21 +30,23 @@ import kotlin.time.Duration
 @Composable
 @OptIn(ExperimentalFoundationApi::class)
 fun EditorUi(
-        entities: Entities,
-        animations: Animations,
-        entityUpdater: EntityUpdater,
-        onAddGroup: (parentId: Long) -> Unit,
-        onDeleteEntity: (parentId: Long) -> Unit,
-        onAddImage: (parentId: Long) -> Unit,
-        onAddAnimation: (name: String, duration: Duration) -> Unit,
-        onAddKeyFrame: (animationId: Long, entityId: Long, propertyId: Long, value: Float, position: Duration) -> Unit,
-        onUpdateAnimation: (animationId: Long, update: (Animation) -> Animation) -> Unit,
+    entities: Entities,
+    animations: Animations,
+    entityUpdater: EntityUpdater,
+    onAddGroup: (parentId: Long) -> Unit,
+    onDeleteEntity: (parentId: Long) -> Unit,
+    onAddImage: (parentId: Long) -> Unit,
+    onAddAnimation: (name: String, duration: Duration) -> Unit,
+    onAddKeyFrame: (animationId: Long, entityId: Long, propertyId: Long, value: Float, position: Duration) -> Unit,
+    onUpdateAnimation: (animationId: Long, update: (Animation) -> Animation) -> Unit,
 ) {
     var viewState: ViewState by remember { mutableStateOf(ViewState.initial()) }
     val animationPropertiesHeight = remember { 30.dp }
     val timelineScrollbarHeight = remember { 4.dp }
     val timeTrackHeight = remember { 50.dp }
     val timeIndicatorHeight = remember { timeTrackHeight + timelineScrollbarHeight }
+    val animationState = viewState.animations
+    var trackPosition by remember(animationState) { mutableStateOf(0f) }
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -57,78 +59,80 @@ fun EditorUi(
             animationState = viewState.animations,
         )
         SyncBottomScrollUi(
-                modifier = Modifier.weight(1f),
-                topLeft = {
-                    PreviewPane(
-                            entities = entities,
-                            modifier = Modifier.matchParentSize(),
-                    )
-                },
-                topRight = {
-                    LayersPane(
-                            entities = entities,
-                            modifier = Modifier.matchParentSize(),
-                            entityUpdater = entityUpdater,
-                            onAddGroup = onAddGroup,
-                            onAddImage = onAddImage,
-                            onDeleteEntity = onDeleteEntity,
-                    )
+            modifier = Modifier.weight(1f),
+            topLeft = {
+                PreviewPane(
+                    entities = entities,
+                    modifier = Modifier.matchParentSize(),
+                )
+            },
+            topRight = {
+                LayersPane(
+                    entities = entities,
+                    modifier = Modifier.matchParentSize(),
+                    entityUpdater = entityUpdater,
+                    onAddGroup = onAddGroup,
+                    onAddImage = onAddImage,
+                    onDeleteEntity = onDeleteEntity,
+                )
 
-                },
-                bottomLeft = { listState ->
-                    Column(modifier = Modifier.matchParentSize()) {
-                        val animationState = viewState.animations
-                        if (animationState is ViewState.Enabled) {
-                            AnimationPropertiesEditor(
-                                    viewState = animationState,
-                                    animations = animations,
-                                    onSelectAnimation = {
-                                        viewState = viewState.copy(animations = ViewState.Selected(it))
-                                    },
-                                    onUpdateAnimation = onUpdateAnimation,
-                                    onAddAnimation = onAddAnimation,
-                                modifier = Modifier.height(animationPropertiesHeight)
+            },
+            bottomLeft = { listState ->
+                Column(modifier = Modifier.matchParentSize()) {
+                    if (animationState is ViewState.Enabled) {
+                        AnimationPropertiesEditor(
+                            viewState = animationState,
+                            animations = animations,
+                            onSelectAnimation = {
+                                viewState = viewState.copy(animations = ViewState.Selected(it))
+                            },
+                            onUpdateAnimation = onUpdateAnimation,
+                            onAddAnimation = onAddAnimation,
+                            modifier = Modifier.height(animationPropertiesHeight)
+                        )
+                        if (animationState is ViewState.Selected) {
+                            Timeline(
+                                duration = animations[animationState.id].duration,
+                                entities = entities,
+                                propertyListState = listState,
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(start = 4.dp)
+                                    .areaBackground()
+                                    .zIndex(2f),
+                                animationId = animationState.id,
+                                animations = animations,
+                                scrollbarHeight = timelineScrollbarHeight,
+                                timeTrackHeight = timeTrackHeight,
+                                onSeek = { trackPosition = it }
                             )
-                            if (animationState is ViewState.Selected) {
-                                Timeline(
-                                    duration = animations[animationState.id].duration,
-                                    entities = entities,
-                                    propertyListState = listState,
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                        .padding(start = 4.dp)
-                                        .areaBackground()
-                                        .zIndex(2f),
-                                    animationId = animationState.id,
-                                    animations = animations,
-                                    scrollbarHeight = timelineScrollbarHeight,
-                                    timeTrackHeight = timeTrackHeight,
-                                )
-                            }
                         }
                     }
-                },
-                bottomRight = { listState ->
-                    Column(
-                        modifier = Modifier.matchParentSize()
-                    ) {
-                        Spacer(
-                            modifier = Modifier
-                                .height(animationPropertiesHeight + timeIndicatorHeight)
-                                .background(Color.Red)
-                        )
-                        PropertiesPane(
-                            propertyNamesListState = listState,
-                            modifier = Modifier.weight(1f)
-                                .fillMaxWidth()
-                                .padding(end = 4.dp),
-                            viewState = viewState,
-                            entityUpdater = entityUpdater,
-                            entities = entities,
-                            onAddKeyFrame = onAddKeyFrame,
-                        )
-                    }
                 }
+            },
+            bottomRight = { listState ->
+                Column(
+                    modifier = Modifier.matchParentSize()
+                ) {
+                    Spacer(
+                        modifier = Modifier
+                            .height(animationPropertiesHeight + timeIndicatorHeight)
+                            .background(Color.Red)
+                    )
+                    PropertiesPane(
+                        propertyNamesListState = listState,
+                        modifier = Modifier.weight(1f)
+                            .fillMaxWidth()
+                            .padding(end = 4.dp),
+                        viewState = viewState,
+                        entityUpdater = entityUpdater,
+                        entities = entities,
+                        onAddKeyFrame = onAddKeyFrame,
+                        trackPosition = { trackPosition },
+                        animations = animations,
+                    )
+                }
+            }
         )
     }
 }

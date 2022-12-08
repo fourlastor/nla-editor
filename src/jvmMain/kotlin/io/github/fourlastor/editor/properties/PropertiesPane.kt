@@ -24,6 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.fourlastor.data.Animations
 import io.github.fourlastor.data.Entities
 import io.github.fourlastor.data.EntityUpdater
 import io.github.fourlastor.editor.KeyFrame
@@ -32,7 +33,7 @@ import io.github.fourlastor.editor.state.ViewState
 import io.kanro.compose.jetbrains.expui.control.Label
 import io.kanro.compose.jetbrains.expui.theme.DarkTheme
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun PropertiesPane(
@@ -42,14 +43,25 @@ fun PropertiesPane(
     modifier: Modifier = Modifier,
     entityUpdater: EntityUpdater,
     onAddKeyFrame: (animationId: Long, entityId: Long, propertyId: Long, value: Float, position: Duration) -> Unit,
+    trackPosition: () -> Float,
+    animations: Animations,
 ) {
-    val state by remember(entities, viewState) { derivedStateOf { toPropertiesState(entities, viewState) } }
+    val state by remember(entities, animations, viewState) {
+        derivedStateOf {
+            toPropertiesState(
+                entities,
+                animations,
+                viewState
+            )
+        }
+    }
     PropertiesPaneUi(
         modifier = modifier,
         propertyNamesListState = propertyNamesListState,
         state = state,
         entityUpdater = entityUpdater,
         onAddKeyFrame = onAddKeyFrame,
+        trackPosition = trackPosition,
     )
 }
 
@@ -60,6 +72,7 @@ private fun PropertiesPaneUi(
     state: PropertiesState,
     entityUpdater: EntityUpdater,
     onAddKeyFrame: (animationId: Long, entityId: Long, propertyId: Long, value: Float, position: Duration) -> Unit,
+    trackPosition: () -> Float,
 ) {
     Column(
         modifier = modifier
@@ -85,6 +98,7 @@ private fun PropertiesPaneUi(
                             property = property,
                             entityUpdater = entityUpdater,
                             onAddKeyFrame = onAddKeyFrame,
+                            trackPosition = trackPosition,
                         )
                     }
                 }
@@ -97,7 +111,8 @@ private fun PropertiesPaneUi(
 private fun Property(
     property: PropertiesState.Property,
     entityUpdater: EntityUpdater,
-    onAddKeyFrame: (animationId: Long, entityId: Long, propertyId: Long, value: Float, position: Duration) -> Unit
+    onAddKeyFrame: (animationId: Long, entityId: Long, propertyId: Long, value: Float, position: Duration) -> Unit,
+    trackPosition: () -> Float
 ) {
     when (property) {
         is PropertiesState.FloatProperty -> PropertyField(
@@ -116,6 +131,7 @@ private fun Property(
             property = property,
             validator = { it.toFloatOrNull() ?: 0f },
             onAddKeyFrame = onAddKeyFrame,
+            trackPosition = trackPosition,
         )
     }
 }
@@ -171,7 +187,8 @@ private fun PropertyAnimated(
     validator: (String) -> Float,
     property: PropertiesState.AnimatedFloatProperty,
     modifier: Modifier = Modifier,
-    onAddKeyFrame: (animationId: Long, entityId: Long, propertyId: Long, value: Float, position: Duration) -> Unit
+    onAddKeyFrame: (animationId: Long, entityId: Long, propertyId: Long, value: Float, position: Duration) -> Unit,
+    trackPosition: () -> Float
 ) {
     var value by remember { mutableStateOf(property.value) }
     PropertyTrack(
@@ -184,7 +201,7 @@ private fun PropertyAnimated(
                     property.entityId,
                     property.id,
                     value,
-                    2.seconds,
+                    (property.trackLength * trackPosition().toDouble()).inWholeMilliseconds.milliseconds,
                 )
             })
         }

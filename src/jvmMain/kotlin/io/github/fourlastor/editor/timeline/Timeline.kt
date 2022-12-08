@@ -38,6 +38,7 @@ fun Timeline(
     animations: Animations,
     scrollbarHeight: Dp,
     timeTrackHeight: Dp,
+    onSeek: (offset: Float) -> Unit,
 ) {
     val state by rememberTimelineState(
         entities,
@@ -73,7 +74,14 @@ fun Timeline(
                         }
                     }
             ) {
-                Scrubber(trackWidth, trackWidthPx)
+                var scrubberOffset by remember { mutableStateOf(0f) }
+                Scrubber(
+                    trackWidth = trackWidth,
+                    scrubberOffset = scrubberOffset,
+                ) {
+                    scrubberOffset += it / trackWidthPx
+                    onSeek(scrubberOffset)
+                }
                 Column(modifier = Modifier.fillMaxSize()) {
                     TimeIndicator(duration, secondWidth, timeTrackHeight)
                     LazyColumn(
@@ -155,22 +163,22 @@ private fun TimeIndicator(duration: Duration, secondWidth: Dp, height: Dp) {
 }
 
 @Composable
-private fun Scrubber(trackWidth: Dp, trackWidthPx: Float) {
+private fun Scrubber(
+    trackWidth: Dp,
+    scrubberOffset: Float,
+    onDrag: (delta: Float) -> Unit,
+) {
     Row(
         modifier = Modifier
             .width(trackWidth)
             .zIndex(2f)
     ) {
-        var scrubberOffset by remember { mutableStateOf(0f) }
         Spacer(modifier = Modifier.fillMaxWidth(scrubberOffset))
         DraggableHandle(
             orientation = Orientation.Vertical,
             color = Color.Red,
             size = 2.dp
-        ) {
-            val delta = it.x / trackWidthPx
-            scrubberOffset += delta
-        }
+        ) { onDrag(it.x) }
     }
 }
 

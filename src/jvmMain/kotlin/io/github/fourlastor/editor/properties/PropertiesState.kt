@@ -1,5 +1,6 @@
 package io.github.fourlastor.editor.properties
 
+import io.github.fourlastor.data.Animations
 import io.github.fourlastor.data.Entities
 import io.github.fourlastor.data.Entity
 import io.github.fourlastor.data.EntityUpdater
@@ -7,6 +8,7 @@ import io.github.fourlastor.data.PropertyValue
 import io.github.fourlastor.editor.state.ViewState
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
+import kotlin.time.Duration
 
 data class PropertiesState(
     val entities: ImmutableList<Entity>
@@ -28,6 +30,7 @@ data class PropertiesState(
         val value: Float,
         val animationId: Long,
         val entityId: Long,
+        val trackLength: Duration,
     ) : Property(id, label)
 
     class ReadonlyFloatProperty(
@@ -50,32 +53,34 @@ data class PropertiesState(
     }
 }
 
-fun toPropertiesState(entities: Entities, viewState: ViewState) = PropertiesState(
+fun toPropertiesState(entities: Entities, animations: Animations, viewState: ViewState) = PropertiesState(
     entities = entities.entities.values
-        .map { it.toEntity(viewState) }
+        .map { it.toEntity(viewState, animations) }
         .sortedBy { it.id }
         .toImmutableList()
 )
 
-private fun Entity.toEntity(viewState: ViewState): PropertiesState.Entity = PropertiesState.Entity(
-    id = id,
-    name = name,
-    properties = listOf(
-        floatProperty(viewState, "X", transform.xProperty, XUpdater(id)),
-        floatProperty(viewState, "Y", transform.yProperty, YUpdater(id)),
-        floatProperty(viewState, "Rotation", transform.rotationProperty, RotationUpdater(id)),
-        floatProperty(viewState, "Scale", transform.scaleProperty, ScaleUpdater(id)),
-    ).toImmutableList()
-)
+private fun Entity.toEntity(viewState: ViewState, animations: Animations): PropertiesState.Entity =
+    PropertiesState.Entity(
+        id = id,
+        name = name,
+        properties = listOf(
+            floatProperty(viewState, "X", transform.xProperty, XUpdater(id), animations),
+            floatProperty(viewState, "Y", transform.yProperty, YUpdater(id), animations),
+            floatProperty(viewState, "Rotation", transform.rotationProperty, RotationUpdater(id), animations),
+            floatProperty(viewState, "Scale", transform.scaleProperty, ScaleUpdater(id), animations),
+        ).toImmutableList()
+    )
 
 private fun Entity.floatProperty(
     viewState: ViewState,
     label: String,
     value: PropertyValue,
-    updater: PropertiesState.PropertyUpdater<Float>
+    updater: PropertiesState.PropertyUpdater<Float>,
+    animations: Animations
 ): PropertiesState.Property {
     return if (viewState.animations is ViewState.Enabled) {
-        animationProperty(label, value, viewState.animations)
+        animationProperty(label, value, viewState.animations, animations)
     } else {
         editorProperty(label, value, updater)
     }
@@ -97,7 +102,8 @@ private fun editorProperty(
 private fun Entity.animationProperty(
     label: String,
     value: PropertyValue,
-    viewState: ViewState.Enabled
+    viewState: ViewState.Enabled,
+    animations: Animations
 ) = if (viewState is ViewState.Selected) {
     PropertiesState.AnimatedFloatProperty(
         id = value.id,
@@ -105,6 +111,7 @@ private fun Entity.animationProperty(
         value = value.value,
         animationId = viewState.id,
         entityId = id,
+        trackLength = animations[viewState.id].duration
     )
 } else {
     PropertiesState.ReadonlyFloatProperty(
