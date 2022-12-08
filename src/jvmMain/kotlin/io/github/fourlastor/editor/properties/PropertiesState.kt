@@ -22,6 +22,14 @@ data class PropertiesState(
         val label: String,
     )
 
+    class AnimatedFloatProperty(
+        id: Long,
+        label: String,
+        val value: Float,
+        val animationId: Long,
+        val entityId: Long,
+    ) : Property(id, label)
+
     class ReadonlyFloatProperty(
         id: Long,
         label: String,
@@ -60,16 +68,16 @@ private fun Entity.toEntity(viewState: ViewState): PropertiesState.Entity = Prop
     ).toImmutableList()
 )
 
-private fun floatProperty(
+private fun Entity.floatProperty(
     viewState: ViewState,
     label: String,
     value: PropertyValue,
     updater: PropertiesState.PropertyUpdater<Float>
 ): PropertiesState.Property {
-    return if (viewState.animations is ViewState.Disabled) {
-        editorProperty(label, value, updater)
+    return if (viewState.animations is ViewState.Enabled) {
+        animationProperty(label, value, viewState.animations)
     } else {
-        animationProperty(label, value)
+        editorProperty(label, value, updater)
     }
 }
 
@@ -86,14 +94,25 @@ private fun editorProperty(
 )
 
 /** Property affecting animation keys, read only until a keyframe is added at the position. */
-private fun animationProperty(
+private fun Entity.animationProperty(
     label: String,
-    value: PropertyValue
-) = PropertiesState.ReadonlyFloatProperty(
-    id = value.id,
-    label = label,
-    value = value.value,
-)
+    value: PropertyValue,
+    viewState: ViewState.Enabled
+) = if (viewState is ViewState.Selected) {
+    PropertiesState.AnimatedFloatProperty(
+        id = value.id,
+        label = label,
+        value = value.value,
+        animationId = viewState.id,
+        entityId = id,
+    )
+} else {
+    PropertiesState.ReadonlyFloatProperty(
+        id = value.id,
+        label = label,
+        value = value.value,
+    )
+}
 
 private class XUpdater(id: Long) : PropertiesState.PropertyUpdater<Float>(id) {
     override fun update(value: Float, entityUpdater: EntityUpdater) {

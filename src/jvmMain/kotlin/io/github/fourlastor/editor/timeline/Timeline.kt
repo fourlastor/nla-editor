@@ -99,6 +99,7 @@ fun Timeline(
                                 ) {
                                     element.keyFrames.forEach { (location, _) ->
                                         KeyFrame(
+                                            selected = true,
                                             modifier = Modifier
                                                 .position(location)
                                         )

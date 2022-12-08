@@ -62,21 +62,21 @@ private fun Entity.toTimelineElements(animation: Animation): List<TimelineElemen
         transform.yProperty.id,
         animation.keyFrames(
             entityId = id,
-            propertyId = transform.xProperty.id,
+            propertyId = transform.yProperty.id,
         )
     ),
     Track(
         transform.rotationProperty.id,
         animation.keyFrames(
             entityId = id,
-            propertyId = transform.xProperty.id,
+            propertyId = transform.rotationProperty.id,
         )
     ),
     Track(
         transform.scaleProperty.id,
         animation.keyFrames(
             entityId = id,
-            propertyId = transform.xProperty.id,
+            propertyId = transform.scaleProperty.id,
         )
     )
 )

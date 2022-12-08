@@ -1,6 +1,7 @@
 package io.github.fourlastor.editor.properties
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,6 +32,8 @@ import io.github.fourlastor.editor.state.ViewState
 import io.kanro.compose.jetbrains.expui.control.Label
 import io.kanro.compose.jetbrains.expui.style.areaBackground
 import io.kanro.compose.jetbrains.expui.theme.DarkTheme
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
 fun PropertiesPane(
@@ -39,9 +42,16 @@ fun PropertiesPane(
     viewState: ViewState,
     modifier: Modifier = Modifier,
     entityUpdater: EntityUpdater,
+    onAddKeyFrame: (animationId: Long, entityId: Long, propertyId: Long, value: Float, position: Duration) -> Unit,
 ) {
     val state by remember(entities, viewState) { derivedStateOf { toPropertiesState(entities, viewState) } }
-    PropertiesPaneUi(modifier, propertyNamesListState, state, entityUpdater)
+    PropertiesPaneUi(
+        modifier = modifier,
+        propertyNamesListState = propertyNamesListState,
+        state = state,
+        entityUpdater = entityUpdater,
+        onAddKeyFrame = onAddKeyFrame,
+    )
 }
 
 @Composable
@@ -50,6 +60,7 @@ private fun PropertiesPaneUi(
     propertyNamesListState: LazyListState,
     state: PropertiesState,
     entityUpdater: EntityUpdater,
+    onAddKeyFrame: (animationId: Long, entityId: Long, propertyId: Long, value: Float, position: Duration) -> Unit,
 ) {
     Column(
         modifier = modifier.fillMaxHeight()
@@ -77,7 +88,11 @@ private fun PropertiesPaneUi(
                 }
                 for (property in entity.properties) {
                     item(key = "p/${property.id}") {
-                        Property(property, entityUpdater)
+                        Property(
+                            property = property,
+                            entityUpdater = entityUpdater,
+                            onAddKeyFrame = onAddKeyFrame,
+                        )
                     }
                 }
             }
@@ -88,7 +103,8 @@ private fun PropertiesPaneUi(
 @Composable
 private fun Property(
     property: PropertiesState.Property,
-    entityUpdater: EntityUpdater
+    entityUpdater: EntityUpdater,
+    onAddKeyFrame: (animationId: Long, entityId: Long, propertyId: Long, value: Float, position: Duration) -> Unit
 ) {
     when (property) {
         is PropertiesState.FloatProperty -> PropertyField(
@@ -102,6 +118,12 @@ private fun Property(
             label = property.label,
             value = property.value.toString(),
         )
+
+        is PropertiesState.AnimatedFloatProperty -> PropertyAnimated(
+            property = property,
+            validator = { it.toFloatOrNull() ?: 0f },
+            onAddKeyFrame = onAddKeyFrame,
+        )
     }
 }
 
@@ -109,7 +131,8 @@ private fun Property(
 private fun PropertyTrack(
     label: String,
     modifier: Modifier = Modifier,
-    content: @Composable RowScope.() -> Unit,
+    keyframe: @Composable RowScope.() -> Unit = {},
+    content: @Composable RowScope.() -> Unit
 ) {
     Row(
         modifier = modifier.fillMaxWidth()
@@ -125,7 +148,7 @@ private fun PropertyTrack(
             textAlign = TextAlign.End
         )
         content()
-        KeyFrame()
+        keyframe()
     }
 }
 
@@ -139,11 +162,42 @@ private fun <T> PropertyField(
 ) {
     PropertyTrack(
         label = label,
-        modifier = modifier
+        modifier = modifier,
     ) {
         TransparentField(
             value = value,
             onValueChange = onValueChange,
+            validator = validator,
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
+
+@Composable
+private fun <T> PropertyAnimated(
+    validator: (String) -> T,
+    property: PropertiesState.AnimatedFloatProperty,
+    modifier: Modifier = Modifier,
+    onAddKeyFrame: (animationId: Long, entityId: Long, propertyId: Long, value: Float, position: Duration) -> Unit
+) {
+    PropertyTrack(
+        label = property.label,
+        modifier = modifier,
+        keyframe = {
+            KeyFrame(false, modifier = Modifier.clickable {
+                onAddKeyFrame(
+                    property.animationId,
+                    property.entityId,
+                    property.id,
+                    property.value,
+                    2.seconds,
+                )
+            })
+        }
+    ) {
+        TransparentField(
+            value = property.value.toString(),
+            onValueChange = { },
             validator = validator,
             modifier = Modifier.weight(1f)
         )
@@ -158,7 +212,7 @@ private fun PropertyReadOnly(
 ) {
     PropertyTrack(
         label = label,
-        modifier = modifier
+        modifier = modifier,
     ) {
         Label(
             text = value,

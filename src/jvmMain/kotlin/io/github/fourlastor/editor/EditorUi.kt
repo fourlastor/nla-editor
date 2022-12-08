@@ -41,6 +41,7 @@ fun EditorUi(
     onDeleteEntity: (parentId: Long) -> Unit,
     onAddImage: (parentId: Long) -> Unit,
     onCreateAnimation: (name: String, duration: Duration) -> Unit,
+    onAddKeyFrame: (animationId: Long, entityId: Long, propertyId: Long, value: Float, position: Duration) -> Unit,
 ) {
     var viewState: ViewState by remember { mutableStateOf(ViewState.initial()) }
 
@@ -136,6 +137,7 @@ fun EditorUi(
                         viewState = viewState,
                         entityUpdater = entityUpdater,
                         entities = entities,
+                        onAddKeyFrame = onAddKeyFrame,
                     )
                 }
             }

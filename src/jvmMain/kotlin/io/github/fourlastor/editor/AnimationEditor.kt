@@ -36,7 +36,10 @@ fun ApplicationScope.AnimationEditor() {
         onDeleteEntity = { viewModel.deleteEntity(it) },
         onCreateAnimation = { name, duration -> viewModel.animation(name, duration) },
         onLoadProject = { viewModel.load(it) },
-        onAddImage = { parentId: Long, name: String, path: String -> viewModel.image(parentId, name, path) }
+        onAddImage = { parentId: Long, name: String, path: String -> viewModel.image(parentId, name, path) },
+        onAddKeyFrame = { animationId: Long, entityId: Long, propertyId: Long, value: Float, position: Duration ->
+            viewModel.keyFrame(animationId, entityId, propertyId, position, value)
+        }
     )
 }
 
@@ -49,6 +52,7 @@ private fun ApplicationScope.ProjectLoader(
     onCreateAnimation: (name: String, duration: Duration) -> Unit,
     onLoadProject: (project: LatestProject) -> Unit,
     onAddImage: (parentId: Long, name: String, path: String) -> Unit,
+    onAddKeyFrame: (animationId: Long, entityId: Long, propertyId: Long, value: Float, position: Duration) -> Unit,
 ) {
     if (loadable !is LoadableProject.Loaded) {
         return
@@ -89,6 +93,7 @@ private fun ApplicationScope.ProjectLoader(
             onDeleteEntity = onDeleteEntity,
             onAddImage = { newImageParentId = it },
             onCreateAnimation = onCreateAnimation,
+            onAddKeyFrame = onAddKeyFrame,
         )
     }
     if (loadRequested) {
