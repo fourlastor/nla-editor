@@ -47,6 +47,7 @@ fun AnimationPropertiesEditor(
     onSelectAnimation: (animationId: Long) -> Unit,
     onUpdateAnimation: (animationId: Long, animationUpdate: AnimationUpdate) -> Unit,
     onAddAnimation: (name: String, duration: Duration) -> Unit,
+    onSeek: (animationId: Long, position: Duration) -> Unit,
 ) {
     Box(
         contentAlignment = Alignment.TopCenter,
@@ -71,6 +72,7 @@ fun AnimationPropertiesEditor(
             )
             val selectedAnimation = state.selectedAnimation
             val duration = selectedAnimation.duration
+            val position = state.position
 
             AnimationPropertyField(
                 value = selectedAnimation.name,
@@ -78,9 +80,11 @@ fun AnimationPropertiesEditor(
                 onUpdate = { name -> onUpdateAnimation(selectedAnimation.id) { it.copy(name = name) } }
             )
             AnimationPropertyField(
-                value = "0",
-                validator = { 0L },
-                onUpdate = { }
+                value = "${position.inWholeMilliseconds}",
+                validator = { it.toLongOrNull()?.milliseconds },
+                onUpdate = {
+                    onSeek(state.selectedAnimation.id, it)
+                }
             )
             AnimationPropertyField(
                 value = duration.inWholeMilliseconds.toString(),
@@ -119,7 +123,8 @@ private fun <T> AnimationPropertyField(
             }
             .onKeyEvent { event ->
                 if (isDirty && event.key == Key.Enter && event.type == KeyEventType.KeyUp) {
-                    validator(currentValue)
+                    val validated = validator(currentValue)
+                    validated
                         ?.also(onUpdate)
                         ?.let { true }
                         ?: false
@@ -136,9 +141,15 @@ private fun Animations.toState(animationState: ViewState.Enabled): AnimationProp
     } else {
         None
     }
+    val position: Duration = if (animationState is ViewState.Selected) {
+        animationState.trackPosition
+    } else {
+        Duration.ZERO
+    }
     return AnimationPropertiesState(
-        selectedAnimation,
-        animations = animations.values.map { it.toAnimation() }.toImmutableList()
+        selectedAnimation = selectedAnimation,
+        position = position,
+        animations = animations.values.map { it.toAnimation() }.toImmutableList(),
     )
 }
 
@@ -148,6 +159,7 @@ private fun DataAnimation.toAnimation(): Animation {
 
 private data class AnimationPropertiesState(
     val selectedAnimation: AnimationInEditor,
+    val position: Duration,
     val animations: ImmutableList<Animation>,
 )
 

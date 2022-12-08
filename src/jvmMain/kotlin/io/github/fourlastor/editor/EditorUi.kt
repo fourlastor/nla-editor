@@ -47,6 +47,9 @@ fun EditorUi(
     val timeTrackHeight = remember { 50.dp }
     val timeIndicatorHeight = remember { timeTrackHeight + timelineScrollbarHeight }
     val animationState = viewState.animations
+    fun seek(animationId: Long, position: Duration) {
+        viewState = viewState.copy(animations = ViewState.Selected(animationId, position))
+    }
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
@@ -88,7 +91,11 @@ fun EditorUi(
                             },
                             onUpdateAnimation = onUpdateAnimation,
                             onAddAnimation = onAddAnimation,
-                            modifier = Modifier.height(animationPropertiesHeight)
+                            modifier = Modifier.height(animationPropertiesHeight),
+                            onSeek = { animationId, position ->
+                                println("Seeking $position")
+                                seek(animationId, position)
+                            }
                         )
                         if (animationState is ViewState.Selected) {
                             Timeline(
@@ -102,11 +109,10 @@ fun EditorUi(
                                 animationId = animationState.id,
                                 animations = animations,
                                 scrollbarHeight = timelineScrollbarHeight,
-                                timeTrackHeight = timeTrackHeight
+                                timeTrackHeight = timeTrackHeight,
+                                animationState = animationState,
                             ) {
-                                viewState = viewState.copy(
-                                    animations = animationState.copy(trackPosition = it)
-                                )
+                                seek(animationState.id, it)
                             }
                         }
                     }

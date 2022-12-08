@@ -7,11 +7,11 @@ import io.github.fourlastor.data.Animation
 import io.github.fourlastor.data.Animations
 import io.github.fourlastor.data.Entities
 import io.github.fourlastor.data.Entity
+import io.github.fourlastor.editor.state.ViewState
 import io.github.fourlastor.system.serializer.DurationAsLong
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.seconds
 
 data class TimelineState(
     val position: Duration,
@@ -32,14 +32,15 @@ data class Track(
 
 @Composable
 fun rememberTimelineState(
+    animationState: ViewState.Selected,
     entities: Entities,
     animations: Animations,
     animationId: Long,
-) = remember(entities, animations, animationId) {
+) = remember(animationState, entities, animations, animationId) {
     derivedStateOf {
         val animation = animations[animationId]
         TimelineState(
-            position = 0.seconds,
+            position = animationState.trackPosition,
             duration = animation.duration,
             elements = entities.entities.values.flatMap {
                 it.toTimelineElements(animation)

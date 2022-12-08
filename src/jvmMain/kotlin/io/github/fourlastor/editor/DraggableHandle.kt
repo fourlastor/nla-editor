@@ -24,6 +24,7 @@ fun DraggableHandle(
     modifier: Modifier = Modifier,
     color: Color = LocalAreaColors.current.startBorderColor,
     size: Dp = 4.dp,
+    onDragEnd: () -> Unit = {},
     onDrag: (Offset) -> Unit,
 ) {
     val horizontalResize = remember { PointerIcon(Cursor(Cursor.N_RESIZE_CURSOR)) }
@@ -39,6 +40,6 @@ fun DraggableHandle(
                 }
             }
             .pointerHoverIcon(if (orientation == Orientation.Vertical) verticalResize else horizontalResize)
-            .onDrag(onDrag = onDrag)
+            .onDrag(onDrag = onDrag, onDragEnd = onDragEnd)
     )
 }

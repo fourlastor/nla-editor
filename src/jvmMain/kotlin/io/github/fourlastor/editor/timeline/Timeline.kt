@@ -20,6 +20,7 @@ import io.github.fourlastor.data.Animations
 import io.github.fourlastor.data.Entities
 import io.github.fourlastor.editor.DraggableHandle
 import io.github.fourlastor.editor.KeyFrame
+import io.github.fourlastor.editor.state.ViewState
 import io.github.fourlastor.system.extension.roundToMilliseconds
 import io.github.fourlastor.system.extension.scale
 import io.kanro.compose.jetbrains.expui.control.Label
@@ -39,9 +40,11 @@ fun Timeline(
     animations: Animations,
     scrollbarHeight: Dp,
     timeTrackHeight: Dp,
+    animationState: ViewState.Selected,
     onSeek: (position: Duration) -> Unit,
 ) {
     val state by rememberTimelineState(
+        animationState,
         entities,
         animations,
         animationId
@@ -75,13 +78,15 @@ fun Timeline(
                         }
                     }
             ) {
-                var scrubberOffset by remember { mutableStateOf(0f) }
+                val scrubberOffset by remember(state.duration, state.position) {
+                    derivedStateOf { (state.position / state.duration).toFloat() }
+                }
                 Scrubber(
                     trackWidth = trackWidth,
+                    trackWidthPx = trackWidthPx,
                     scrubberOffset = scrubberOffset,
                 ) {
-                    scrubberOffset += it / trackWidthPx
-                    val position = state.duration.scale(scrubberOffset).roundToMilliseconds()
+                    val position = state.duration.scale(it).roundToMilliseconds()
                     onSeek(position)
                 }
                 Column(modifier = Modifier.fillMaxSize()) {
@@ -168,19 +173,26 @@ private fun TimeIndicator(duration: Duration, secondWidth: Dp, height: Dp) {
 private fun Scrubber(
     trackWidth: Dp,
     scrubberOffset: Float,
+    trackWidthPx: Float,
     onDrag: (delta: Float) -> Unit,
 ) {
+    var offset by remember(scrubberOffset) { mutableStateOf(scrubberOffset) }
     Row(
         modifier = Modifier
             .width(trackWidth)
             .zIndex(2f)
     ) {
-        Spacer(modifier = Modifier.fillMaxWidth(scrubberOffset))
+        Spacer(modifier = Modifier.fillMaxWidth(offset))
         DraggableHandle(
             orientation = Orientation.Vertical,
             color = Color.Red,
-            size = 2.dp
-        ) { onDrag(it.x) }
+            size = 2.dp,
+            onDragEnd = { onDrag(offset) }
+        ) {
+            val delta = it.x / trackWidthPx
+            println(delta)
+            offset += delta
+        }
     }
 }
 
