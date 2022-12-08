@@ -1,4 +1,4 @@
-package io.github.fourlastor.editor
+package io.github.fourlastor.editor.timeline
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.Orientation
@@ -18,6 +18,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import io.github.fourlastor.data.Animations
 import io.github.fourlastor.data.Entities
+import io.github.fourlastor.editor.DraggableHandle
+import io.github.fourlastor.editor.KeyFrame
 import io.github.fourlastor.editor.state.toEntitiesState
 import io.kanro.compose.jetbrains.expui.control.Label
 import io.kanro.compose.jetbrains.expui.style.LocalAreaColors

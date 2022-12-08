@@ -19,6 +19,7 @@ import io.github.fourlastor.editor.animationmode.AnimationMode
 import io.github.fourlastor.editor.layers.LayersPane
 import io.github.fourlastor.editor.properties.PropertiesPane
 import io.github.fourlastor.editor.state.ViewState
+import io.github.fourlastor.editor.timeline.Timeline
 import io.kanro.compose.jetbrains.expui.style.areaBackground
 import kotlinx.coroutines.launch
 import org.jetbrains.skiko.Cursor
