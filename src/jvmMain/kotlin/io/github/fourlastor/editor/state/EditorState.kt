@@ -1,5 +1,9 @@
 package io.github.fourlastor.editor.state
 
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.ImageBitmap
+import io.github.fourlastor.editor.loadImageFromPath
 import io.github.fourlastor.entity.Entities
 import io.github.fourlastor.entity.Group
 import io.github.fourlastor.entity.Image
@@ -56,10 +60,20 @@ class ImageState(
         id: Long,
         parentId: Long?,
         name: String = "Image",
-        transform: Transform,
         collapsed: Boolean,
         val path: String,
-) : EntityState(id, parentId, transform, name, collapsed)
+        transform: Transform,
+) : EntityState(id, parentId, transform, name, collapsed) {
+
+    init {
+        transform.region = Rect(
+            left = 0.0f,
+            top = 0.0f,
+            right = loadImageFromPath(path).width.toFloat(),
+            bottom = loadImageFromPath(path).height.toFloat(),
+        )
+    }
+}
 
 fun Entities.toEditorState(): EditorState {
     return EditorState(
@@ -78,4 +92,4 @@ fun Entities.toEditorState(): EditorState {
 private fun Group.groupState() = GroupState(id, parentId, transform, name, collapsed)
 
 private fun Image.imageState() =
-        ImageState(id, parentId, name, transform, collapsed, path)
+        ImageState(id, parentId, name, collapsed, path, transform)

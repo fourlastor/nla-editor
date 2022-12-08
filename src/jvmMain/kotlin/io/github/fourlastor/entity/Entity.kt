@@ -1,6 +1,7 @@
 package io.github.fourlastor.entity
 
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -85,6 +86,8 @@ data class Image(
  */
 @Serializable
 data class Transform(
+    @Serializable(with = OffsetSerializer::class)  // TODO
+    var region: Rect,
     @Serializable(with = OffsetSerializer::class)
     val translation: Offset,
     val rotation: Float,
@@ -103,8 +106,11 @@ data class Transform(
 
     fun rotation(rotation: Float) = copy(rotation = rotation)
 
+    fun region(region: Rect) = copy(region = region)
+
     companion object {
         val IDENTITY = Transform(
+            region = Rect.Zero,
             translation = Offset.Zero,
             rotation = 0f,
             scale = 1f,

@@ -15,12 +15,14 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.fourlastor.editor.state.EntitiesState
 import io.github.fourlastor.editor.state.EntityState
+import io.github.fourlastor.editor.state.ImageState
 import io.github.fourlastor.entity.EntityUpdater
 import io.kanro.compose.jetbrains.expui.control.Label
 import io.kanro.compose.jetbrains.expui.style.areaBackground
@@ -74,8 +76,20 @@ fun PropertiesPane(
                         "Rotation",
                         entity.transform.rotation.toString(),
                         { it.toFloatOrNull() ?: 0f },
-                            { rotation -> entityUpdater(entity.id) { it.rotation(rotation) } }
+                        { rotation -> entityUpdater(entity.id) { it.rotation(rotation) } }
                     )
+
+                    if (entity is ImageState) {
+                        Property(
+                                "Rows",
+                                (loadImageFromPath(entity.path).height / entity.transform.region.height).toString(),
+                                { it.toFloatOrNull() ?: 0f },
+                                { value -> entityUpdater(entity.id) {
+                                    it.transform.region(Rect.Zero)
+                                } }
+                        )
+                    }
+
                 }
             }
         }

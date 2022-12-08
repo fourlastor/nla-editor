@@ -13,6 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.ClipOp
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.drawscope.DrawScope
@@ -22,6 +23,7 @@ import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.input.pointer.PointerButton
 import androidx.compose.ui.res.loadImageBitmap
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import io.github.fourlastor.editor.state.EntitiesState
 import io.github.fourlastor.editor.state.EntityNode
 import io.github.fourlastor.editor.state.GroupNode
@@ -70,7 +72,7 @@ private fun toPreview(entity: EntityNode): EntityPreview = when (entity) {
     )
 }
 
-private fun loadImageFromPath(path: String): ImageBitmap =
+public fun loadImageFromPath(path: String): ImageBitmap =
     File(path).inputStream().buffered().use(::loadImageBitmap)
 
 private sealed interface EntityPreview {
@@ -90,18 +92,20 @@ private data class GroupPreview(
 }
 
 private data class ImagePreview(
-    val transform: Transform,
-    val image: ImageBitmap,
+        val transform: Transform,
+        val image: ImageBitmap,
 ) : EntityPreview {
+
     override fun draw(drawScope: DrawScope) = drawScope.withTransform(transform.action) {
         drawImage(
             image = image,
+            srcOffset = IntOffset(transform.region.left.toInt(), transform.region.top.toInt()),
+            srcSize = IntSize(transform.region.width.toInt(), transform.region.height.toInt()),
             dstOffset = intCenter - image.center,
-            filterQuality = FilterQuality.None
+            filterQuality = FilterQuality.None,
         )
     }
 }
-
 
 val Transform.action: DrawTransform.() -> Unit
     get() = {
