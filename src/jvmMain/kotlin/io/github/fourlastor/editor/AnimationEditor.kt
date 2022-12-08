@@ -10,6 +10,7 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.ApplicationScope
 import androidx.compose.ui.window.rememberWindowState
+import io.github.fourlastor.data.Animation
 import io.github.fourlastor.data.EntityUpdater
 import io.github.fourlastor.data.LatestProject
 import io.github.fourlastor.data.LoadableProject
@@ -34,12 +35,13 @@ fun ApplicationScope.AnimationEditor() {
         entityUpdater = { id, update -> viewModel.updateEntity(id, update) },
         onAddGroup = { viewModel.group(it, "Group") },
         onDeleteEntity = { viewModel.deleteEntity(it) },
-        onCreateAnimation = { name, duration -> viewModel.animation(name, duration) },
+        onAddAnimation = { name, duration -> viewModel.animation(name, duration) },
         onLoadProject = { viewModel.load(it) },
         onAddImage = { parentId: Long, name: String, path: String -> viewModel.image(parentId, name, path) },
         onAddKeyFrame = { animationId: Long, entityId: Long, propertyId: Long, value: Float, position: Duration ->
             viewModel.keyFrame(animationId, entityId, propertyId, position, value)
-        }
+        },
+        onUpdateAnimation = { id, update -> viewModel.updateAnimation(id, update) }
     )
 }
 
@@ -49,10 +51,11 @@ private fun ApplicationScope.ProjectLoader(
     entityUpdater: EntityUpdater,
     onAddGroup: (parentId: Long) -> Unit,
     onDeleteEntity: (id: Long) -> Unit,
-    onCreateAnimation: (name: String, duration: Duration) -> Unit,
+    onAddAnimation: (name: String, duration: Duration) -> Unit,
     onLoadProject: (project: LatestProject) -> Unit,
     onAddImage: (parentId: Long, name: String, path: String) -> Unit,
     onAddKeyFrame: (animationId: Long, entityId: Long, propertyId: Long, value: Float, position: Duration) -> Unit,
+    onUpdateAnimation: (animationId: Long, update: (Animation) -> Animation) -> Unit,
 ) {
     if (loadable !is LoadableProject.Loaded) {
         return
@@ -92,8 +95,9 @@ private fun ApplicationScope.ProjectLoader(
             onAddGroup = onAddGroup,
             onDeleteEntity = onDeleteEntity,
             onAddImage = { newImageParentId = it },
-            onCreateAnimation = onCreateAnimation,
+            onAddAnimation = onAddAnimation,
             onAddKeyFrame = onAddKeyFrame,
+            onUpdateAnimation = onUpdateAnimation,
         )
     }
     if (loadRequested) {

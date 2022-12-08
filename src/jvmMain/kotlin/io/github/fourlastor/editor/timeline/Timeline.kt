@@ -26,12 +26,11 @@ import io.kanro.compose.jetbrains.expui.theme.DarkTheme
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Timeline(
-    duration: Duration = 5.seconds,
+    duration: Duration,
     entities: Entities,
     propertyListState: LazyListState,
     modifier: Modifier = Modifier,

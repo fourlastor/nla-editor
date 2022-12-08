@@ -133,4 +133,7 @@ class ViewModel {
     )
 
     private fun MutableStateFlow<Long>.nextId() = updateAndGet { it + 1 }
+    fun updateAnimation(id: Long, update: (Animation) -> Animation) {
+        animations.update { it.animation(update(it[id])) }
+    }
 }
