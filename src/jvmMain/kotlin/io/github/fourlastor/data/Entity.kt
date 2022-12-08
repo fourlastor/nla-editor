@@ -1,12 +1,6 @@
-package io.github.fourlastor.entity
+package io.github.fourlastor.data
 
-import androidx.compose.ui.geometry.Offset
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
 
 /**
  * An animation is composed of elements which have properties (such as position, rotation, scale).
@@ -22,6 +16,7 @@ sealed interface Entity {
     fun x(x: Float): Entity
     fun y(y: Float): Entity
     fun rotation(rotation: Float): Entity
+    fun scale(scale: Float): Entity
     fun name(name: String): Entity
     fun collapsed(collapsed: Boolean): Entity
 
@@ -34,7 +29,7 @@ sealed interface Entity {
 
 /**
  * A [Group] is an [Entity] which only contains children entities.
- * The children are associated by [parentId], see [Entities.asNode] for accessing them in a tree-like manner.
+ * The children are associated by [parentId].
  */
 @Serializable
 data class Group(
@@ -52,6 +47,7 @@ data class Group(
     override fun rotation(rotation: Float) = copy(transform = transform.rotation(rotation))
 
     override fun name(name: String) = copy(name = name)
+    override fun scale(scale: Float) = copy(transform = transform.scale(scale))
     override fun collapsed(collapsed: Boolean) = copy(collapsed = collapsed)
 }
 
@@ -75,68 +71,38 @@ data class Image(
 
     override fun rotation(rotation: Float) = copy(transform = transform.rotation(rotation))
 
+    override fun scale(scale: Float) = copy(transform = transform.scale(scale))
+
     override fun name(name: String) = copy(name = name)
 
     override fun collapsed(collapsed: Boolean) = copy(collapsed = collapsed)
 }
 
 /**
- * Represents the transform ([translation], [rotation], and [scale]) of an [Entity].
+ * Represents the transform ([x], [y], [rotation], and [scale]) of an [Entity].
  */
 @Serializable
 data class Transform(
-    @Serializable(with = OffsetSerializer::class)
-    val translation: Offset,
-    val rotation: Float,
-    val scale: Float,
-    @Serializable(with = OffsetSerializer::class)
-    val pivotOffset: Offset,
+    val xProperty: PropertyValue,
+    val yProperty: PropertyValue,
+    val rotationProperty: PropertyValue,
+    val scaleProperty: PropertyValue,
 ) {
     val x: Float
-        get() = translation.x
+        get() = xProperty.value
     val y: Float
-        get() = translation.y
+        get() = yProperty.value
 
-    fun x(x: Float) = copy(translation = translation.copy(x = x))
+    val rotation: Float
+        get() = rotationProperty.value
 
-    fun y(y: Float) = copy(translation = translation.copy(y = y))
+    val scale: Float
+        get() = scaleProperty.value
 
-    fun rotation(rotation: Float) = copy(rotation = rotation)
+    fun x(x: Float) = copy(xProperty = xProperty.copy(value = x))
 
-    companion object {
-        val IDENTITY = Transform(
-            translation = Offset.Zero,
-            rotation = 0f,
-            scale = 1f,
-            pivotOffset = Offset.Zero,
-        )
-    }
+    fun y(y: Float) = copy(yProperty = yProperty.copy(value = y))
+
+    fun rotation(rotation: Float) = copy(rotationProperty = rotationProperty.copy(value = rotation))
+    fun scale(scale: Float) = copy(scaleProperty = scaleProperty.copy(value = scale))
 }
-
-/** JSON serializer for [Offset]. Delegates to a surrogate class. */
-private object OffsetSerializer : KSerializer<Offset> {
-    override val descriptor: SerialDescriptor
-        get() = OffsetSurrogate.serializer().descriptor
-
-    override fun deserialize(decoder: Decoder): Offset {
-        val surrogate = decoder.decodeSerializableValue(OffsetSurrogate.serializer())
-        return Offset(surrogate.x, surrogate.y)
-    }
-
-    override fun serialize(encoder: Encoder, value: Offset) {
-        val surrogate = OffsetSurrogate(value.x, value.y)
-        encoder.encodeSerializableValue(OffsetSurrogate.serializer(), surrogate)
-    }
-
-}
-
-/**
- * [Offset] JSON surrogate class.
- * Used to generate a serializer usable with [Offset], which isn't @[Serializable]
- */
-@Serializable
-@SerialName("Offset")
-private data class OffsetSurrogate(
-    val x: Float,
-    val y: Float,
-)

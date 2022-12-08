@@ -1,7 +1,7 @@
 package io.github.fourlastor.editor
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -10,22 +10,59 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.ApplicationScope
 import androidx.compose.ui.window.rememberWindowState
+import io.github.fourlastor.data.Animation
+import io.github.fourlastor.data.EntityUpdater
+import io.github.fourlastor.data.LatestProject
+import io.github.fourlastor.data.LoadableProject
+import io.github.fourlastor.data.ViewModel
 import io.github.fourlastor.editor.save.LoadProject
 import io.github.fourlastor.editor.save.SaveProject
-import io.github.fourlastor.editor.state.toEditorState
-import io.github.fourlastor.entity.Entities
 import io.kanro.compose.jetbrains.expui.theme.DarkTheme
 import io.kanro.compose.jetbrains.expui.window.JBWindow
 import kotlin.system.exitProcess
+import kotlin.time.Duration
 
 @Composable
         /**
          * Main view, this displays a new window and holds the application state.
          */
 fun ApplicationScope.AnimationEditor() {
-    /** `state` is the actual editor state, it contains a copy of [Entities]. */
-    var dataState by remember { mutableStateOf(Entities.empty()) }
-    val editorState by remember(dataState) { derivedStateOf { dataState.toEditorState() } }
+    val viewModel = remember { ViewModel() }
+    val project by viewModel.project.collectAsState(LoadableProject.Loading)
+
+    ProjectLoader(
+        loadable = project,
+        entityUpdater = { id, update -> viewModel.updateEntity(id, update) },
+        onAddGroup = { viewModel.group(it, "Group") },
+        onDeleteEntity = { viewModel.deleteEntity(it) },
+        onAddAnimation = { name, duration -> viewModel.animation(name, duration) },
+        onLoadProject = { viewModel.load(it) },
+        onAddImage = { parentId: Long, name: String, path: String -> viewModel.image(parentId, name, path) },
+        onAddKeyFrame = { animationId: Long, entityId: Long, propertyId: Long, value: Float, position: Duration ->
+            viewModel.keyFrame(animationId, entityId, propertyId, position, value)
+        },
+        onUpdateAnimation = { id, update -> viewModel.updateAnimation(id, update) }
+    )
+}
+
+@Composable
+private fun ApplicationScope.ProjectLoader(
+    loadable: LoadableProject,
+    entityUpdater: EntityUpdater,
+    onAddGroup: (parentId: Long) -> Unit,
+    onDeleteEntity: (id: Long) -> Unit,
+    onAddAnimation: (name: String, duration: Duration) -> Unit,
+    onLoadProject: (project: LatestProject) -> Unit,
+    onAddImage: (parentId: Long, name: String, path: String) -> Unit,
+    onAddKeyFrame: (animationId: Long, entityId: Long, propertyId: Long, value: Float, position: Duration) -> Unit,
+    onUpdateAnimation: (animationId: Long, update: (Animation) -> Animation) -> Unit,
+) {
+    if (loadable !is LoadableProject.Loaded) {
+        return
+    }
+    val project = loadable.result
+    val animations = project.animations
+    val entities = project.entities
 
     /** Local state, it's used to display or not the save popup. */
     var saveRequested by remember { mutableStateOf(false) }
@@ -35,11 +72,6 @@ fun ApplicationScope.AnimationEditor() {
 
     /** Local state. When this is set, a "new entity" popup is displayed. */
     var newImageParentId: Long? by remember { mutableStateOf(null) }
-
-
-    fun updateEntities(entities: Entities) {
-        dataState = entities
-    }
 
     JBWindow(
         title = "NLA Editor",
@@ -57,18 +89,21 @@ fun ApplicationScope.AnimationEditor() {
         }
     ) {
         EditorUi(
-                entities = editorState.entities,
-                entityUpdater = { id, update ->
-                    updateEntities(entities = dataState.update(update(dataState.byId(id))))
-                },
-                onAddGroup = { updateEntities(dataState.group(it, "Group")) },
-                onDeleteNode = { updateEntities(dataState.remove(it)) },
-        ) { newImageParentId = it }
+            animations = animations,
+            entities = entities,
+            entityUpdater = entityUpdater,
+            onAddGroup = onAddGroup,
+            onDeleteEntity = onDeleteEntity,
+            onAddImage = { newImageParentId = it },
+            onAddAnimation = onAddAnimation,
+            onAddKeyFrame = onAddKeyFrame,
+            onUpdateAnimation = onUpdateAnimation,
+        )
     }
     if (loadRequested) {
         LoadProject(
             onSuccess = {
-                updateEntities(it)
+                onLoadProject(it)
                 loadRequested = false
             },
             onFailure = {
@@ -80,23 +115,21 @@ fun ApplicationScope.AnimationEditor() {
     }
     if (saveRequested) {
         SaveProject(
-                entities = dataState,
-                onSuccess = {
-                    println("Saved project successfully.")
-                    saveRequested = false
-                },
-                onFailure = {
-                    println("Failed to save because $it")
-                    saveRequested = false
-                },
-                onCancel = { saveRequested = false }
+            project = project,
+            onSuccess = {
+                println("Saved project successfully.")
+            },
+            onFailure = {
+                println("Failed to save because $it")
+            },
+            onCancel = { saveRequested = false }
         )
     }
 
     AddImage(
         newImageParentId,
         onAddImage = { parentId, name, path ->
-            updateEntities(dataState.image(parentId, name, path))
+            onAddImage(parentId, name, path)
             newImageParentId = null
         },
         onCancel = { newImageParentId = null }

@@ -21,16 +21,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.fourlastor.data.Entities
+import io.github.fourlastor.data.EntityType
+import io.github.fourlastor.data.EntityUpdater
 import io.github.fourlastor.editor.TransparentField
 import io.github.fourlastor.editor.icon.MediumIcon
 import io.github.fourlastor.editor.icon.SmallIcon
-import io.github.fourlastor.editor.state.EntitiesState
 import io.github.fourlastor.editor.state.EntityNode
 import io.github.fourlastor.editor.state.EntityState
 import io.github.fourlastor.editor.state.GroupNode
 import io.github.fourlastor.editor.state.ImageNode
-import io.github.fourlastor.entity.EntityType
-import io.github.fourlastor.entity.EntityUpdater
+import io.github.fourlastor.editor.state.toEntitiesState
 import io.github.fourlastor.system.Selectable
 import io.kanro.compose.jetbrains.expui.control.ActionButton
 import io.kanro.compose.jetbrains.expui.control.Label
@@ -41,15 +42,15 @@ import io.kanro.compose.jetbrains.expui.control.Label
  */
 @Composable
 fun LayersPane(
-        entities: EntitiesState,
-        modifier: Modifier,
-        entityUpdater: EntityUpdater,
-        onAddGroup: (parentId: Long) -> Unit,
-        onAddImage: (parentId: Long) -> Unit,
-        onDeleteNode: (parentId: Long) -> Unit,
+    entities: Entities,
+    modifier: Modifier,
+    entityUpdater: EntityUpdater,
+    onAddGroup: (parentId: Long) -> Unit,
+    onAddImage: (parentId: Long) -> Unit,
+    onDeleteEntity: (entityId: Long) -> Unit,
 ) {
     var selectedEntity by remember { mutableStateOf<EntityNode?>(null) }
-    val rootNode by remember(entities) { derivedStateOf { entities.asNode() } }
+    val rootNode by remember(entities) { derivedStateOf { entities.toEntitiesState().asNode() } }
 
     Column(
             modifier = modifier.fillMaxSize().padding(2.dp)
@@ -59,9 +60,9 @@ fun LayersPane(
                 verticalAlignment = Alignment.CenterVertically,
         ) {
             Label(
-                    text = "Layers", modifier = Modifier.weight(1f), fontSize = 16.sp
+                text = "Layers", modifier = Modifier.weight(1f), fontSize = 16.sp
             )
-            AddEntitiesButtons(selectedEntity, onAddGroup, onAddImage, onDeleteNode)
+            AddEntitiesButtons(selectedEntity, onAddGroup, onAddImage, onDeleteEntity)
         }
         EntityTreeView(
                 entity = rootNode,
@@ -80,7 +81,7 @@ private fun AddEntitiesButtons(
     selectedEntity: EntityNode?,
     onAddGroup: (parentId: Long) -> Unit,
     onAddImage: (parentId: Long) -> Unit,
-    onDeleteNode: (parentId: Long) -> Unit,
+    onDeleteEntity: (entityId: Long) -> Unit,
 ) {
     if (selectedEntity == null) return
     if (selectedEntity is GroupNode) {
@@ -93,7 +94,7 @@ private fun AddEntitiesButtons(
     }
     if (selectedEntity.entity.isNotRoot()) {
         AddButton(
-                parentId = selectedEntity.entity.id, type = EntityType.DELETE, onEntityAdd = onDeleteNode
+            parentId = selectedEntity.entity.id, type = EntityType.DELETE, onEntityAdd = onDeleteEntity
         )
     }
 }

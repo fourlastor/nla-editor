@@ -1,4 +1,4 @@
-package io.github.fourlastor.editor
+package io.github.fourlastor.editor.timeline
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.Orientation
@@ -13,36 +13,52 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerButton
 import androidx.compose.ui.layout.*
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import io.github.fourlastor.editor.state.EntitiesState
+import io.github.fourlastor.data.Animations
+import io.github.fourlastor.data.Entities
+import io.github.fourlastor.editor.DraggableHandle
+import io.github.fourlastor.editor.KeyFrame
+import io.github.fourlastor.editor.state.ViewState
+import io.github.fourlastor.system.extension.roundToMilliseconds
+import io.github.fourlastor.system.extension.scale
 import io.kanro.compose.jetbrains.expui.control.Label
 import io.kanro.compose.jetbrains.expui.style.LocalAreaColors
 import io.kanro.compose.jetbrains.expui.theme.DarkTheme
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Timeline(
-        duration: Duration = 5.seconds,
-        entities: EntitiesState,
-        propertyListState: LazyListState,
-        modifier: Modifier = Modifier,
+    entities: Entities,
+    propertyListState: LazyListState,
+    modifier: Modifier = Modifier,
+    animationId: Long,
+    animations: Animations,
+    scrollbarHeight: Dp,
+    timeTrackHeight: Dp,
+    animationState: ViewState.Selected,
+    onSeek: (position: Duration) -> Unit,
 ) {
+    val state by rememberTimelineState(
+        animationState,
+        entities,
+        animations,
+        animationId
+    )
     val secondWidth = 300.dp
     val horizontalScrollState = rememberScrollState(0)
     val coroutineScope = rememberCoroutineScope()
-    val trackWidth = secondWidth * duration.inWholeMilliseconds.toInt() / 1000
+    val trackWidth = secondWidth * state.duration.inWholeMilliseconds.toInt() / 1000
 
     Column(modifier = modifier) {
         HorizontalScrollbar(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(4.dp),
+                .height(scrollbarHeight),
             adapter = rememberScrollbarAdapter(horizontalScrollState)
         )
         BoxWithConstraints(
@@ -62,86 +78,43 @@ fun Timeline(
                         }
                     }
             ) {
-                Row(
-                    modifier = Modifier
-                        .width(trackWidth)
-                        .zIndex(2f)
+                val scrubberOffset by remember(state.duration, state.position) {
+                    derivedStateOf { (state.position / state.duration).toFloat() }
+                }
+                Scrubber(
+                    trackWidth = trackWidth,
+                    trackWidthPx = trackWidthPx,
+                    scrubberOffset = scrubberOffset,
                 ) {
-                    var scrubberOffset by remember { mutableStateOf(0f) }
-                    Spacer(modifier = Modifier.fillMaxWidth(scrubberOffset))
-                    DraggableHandle(
-                        orientation = Orientation.Vertical,
-                        color = Color.Red,
-                        size = 2.dp
-                    ) {
-                        val delta = it.x / trackWidthPx
-                        scrubberOffset += delta
-                    }
+                    val position = state.duration.scale(it).roundToMilliseconds()
+                    onSeek(position)
                 }
                 Column(modifier = Modifier.fillMaxSize()) {
-                    Box {
-                        Row {
-                            repeat(duration.inWholeSeconds.toInt()) { counter ->
-                                Box(
-                                    modifier = Modifier.width(secondWidth)
-                                        .height(40.dp)
-                                        .padding(2.dp)
-                                ) {
-                                    Label(counter.toString())
-                                }
-                            }
-                        }
-                        val color = LocalAreaColors.current.text
-                        Canvas(modifier = Modifier.fillMaxWidth().height(50.dp)) {
-                            val secondOffset = secondWidth.toPx()
-                            for (s in 0 until duration.inWholeSeconds) {
-                                val xOffset = s * secondOffset
-                                drawLine(
-                                    color = color,
-                                    start = Offset(xOffset, 0f),
-                                    end = Offset(xOffset, 50f),
-                                    strokeWidth = 2f,
-                                )
-
-                                for (ms in 1 until 10) {
-                                    val msOffset = ms / 10f * secondOffset
-                                    drawLine(
-                                        color = color,
-                                        start = Offset(xOffset + msOffset, 0f),
-                                        end = Offset(xOffset + msOffset, 15f),
-                                        strokeWidth = 1f,
-                                    )
-                                }
-                            }
-                        }
-                    }
+                    TimeIndicator(state.duration, secondWidth, timeTrackHeight)
                     LazyColumn(
                         modifier = Modifier.width(trackWidth)
-                            .padding(vertical = 4.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                            .padding(vertical = scrollbarHeight),
+                        verticalArrangement = Arrangement.spacedBy(2.dp),
                         state = propertyListState,
                         userScrollEnabled = false,
                     ) {
                         items(
-                            count = entities.entities.size,
-                            key = { entities.entities[it].id }
+                            count = state.elements.size,
+                            key = { state.elements[it].key }
                         ) {
-                            Column(
-                                verticalArrangement = Arrangement.spacedBy(2.dp)
-                            ) {
-                                Spacer(
+                            when (val element = state.elements[it]) {
+                                is Spacer -> Spacer(
                                     modifier = Modifier.fillMaxWidth()
-                                        .height(40.dp),
+                                        .height(44.dp),
                                 )
-                                // this should be 1 track per property in the entity
-                                // 3 works because we have x,y,rotation
-                                repeat(3) { index ->
-                                    FrameTrack(
-                                        duration = duration,
-                                        modifier = Modifier.fillMaxWidth()
-                                    ) {
-                                        val location = 1000.milliseconds * index
+
+                                is Track -> FrameTrack(
+                                    duration = state.duration,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    element.keyFrames.forEach { (location, _) ->
                                         KeyFrame(
+                                            selected = true,
                                             modifier = Modifier
                                                 .position(location)
                                         )
@@ -152,6 +125,72 @@ fun Timeline(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun TimeIndicator(duration: Duration, secondWidth: Dp, height: Dp) {
+    Box {
+        Row {
+            repeat(duration.inWholeSeconds.toInt()) { counter ->
+                Box(
+                    modifier = Modifier.width(secondWidth)
+                        .height(40.dp)
+                        .padding(2.dp)
+                ) {
+                    Label(counter.toString())
+                }
+            }
+        }
+        val color = LocalAreaColors.current.text
+        Canvas(modifier = Modifier.fillMaxWidth().height(height)) {
+            val secondOffset = secondWidth.toPx()
+            for (s in 0 until duration.inWholeSeconds) {
+                val xOffset = s * secondOffset
+                drawLine(
+                    color = color,
+                    start = Offset(xOffset, 0f),
+                    end = Offset(xOffset, 50f),
+                    strokeWidth = 2f,
+                )
+
+                for (ms in 1 until 10) {
+                    val msOffset = ms / 10f * secondOffset
+                    drawLine(
+                        color = color,
+                        start = Offset(xOffset + msOffset, 0f),
+                        end = Offset(xOffset + msOffset, 15f),
+                        strokeWidth = 1f,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun Scrubber(
+    trackWidth: Dp,
+    scrubberOffset: Float,
+    trackWidthPx: Float,
+    onDrag: (delta: Float) -> Unit,
+) {
+    var offset by remember(scrubberOffset) { mutableStateOf(scrubberOffset) }
+    Row(
+        modifier = Modifier
+            .width(trackWidth)
+            .zIndex(2f)
+    ) {
+        Spacer(modifier = Modifier.fillMaxWidth(offset))
+        DraggableHandle(
+            orientation = Orientation.Vertical,
+            color = Color.Red,
+            size = 2.dp,
+            onDragEnd = { onDrag(offset) }
+        ) {
+            val delta = it.x / trackWidthPx
+            offset += delta
         }
     }
 }

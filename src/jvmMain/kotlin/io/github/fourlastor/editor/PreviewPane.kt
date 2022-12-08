@@ -12,6 +12,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
@@ -22,11 +23,14 @@ import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.input.pointer.PointerButton
 import androidx.compose.ui.res.loadImageBitmap
 import androidx.compose.ui.unit.IntOffset
-import io.github.fourlastor.editor.state.EntitiesState
+import io.github.fourlastor.data.Entities
+import io.github.fourlastor.data.Transform
 import io.github.fourlastor.editor.state.EntityNode
 import io.github.fourlastor.editor.state.GroupNode
 import io.github.fourlastor.editor.state.ImageNode
-import io.github.fourlastor.entity.Transform
+import io.github.fourlastor.editor.state.toEntitiesState
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import java.io.File
 
 /**
@@ -36,15 +40,24 @@ import java.io.File
 @ExperimentalFoundationApi
 @Composable
 fun PreviewPane(
-        entities: EntitiesState,
-        modifier: Modifier,
+    entities: Entities,
+    modifier: Modifier,
 ) {
-    var pan by remember { mutableStateOf(Offset.Zero) }
-    val entityPreview by remember(entities) { derivedStateOf { toPreview(entities.asNode()) } }
-    Box(
-        modifier = modifier.onDrag(matcher = PointerMatcher.mouse(PointerButton.Secondary)) {
-            pan += it
+    val entityPreview by remember(entities) {
+        derivedStateOf {
+            entities
+                .toEntitiesState()
+                .asNode()
+                .toPreview()
         }
+    }
+    var pan by remember { mutableStateOf(Offset.Zero) }
+    Box(
+        modifier = modifier
+            .clipToBounds()
+            .onDrag(matcher = PointerMatcher.mouse(PointerButton.Secondary)) {
+                pan += it
+            }
     ) {
         Canvas(modifier = Modifier.matchParentSize()) {
             withTransform({
@@ -57,30 +70,30 @@ fun PreviewPane(
     }
 }
 
-/** Transforms [entity] to a version that can be displayed, loading images and so forth. */
-private fun toPreview(entity: EntityNode): EntityPreview = when (entity) {
+/** Transforms [this@toPreview] to a version that can be displayed, loading images and so forth. */
+private fun EntityNode.toPreview(): EntityPreview = when (this) {
     is GroupNode -> GroupPreview(
-        entities = entity.children.map { toPreview(it) },
-        transform = entity.entity.transform,
+        entities = children.map { it.toPreview() }.toImmutableList(),
+        transform = entity.transform,
     )
 
     is ImageNode -> ImagePreview(
-        image = loadImageFromPath(entity.entity.path),
-        transform = entity.entity.transform,
+        image = loadImageFromPath(entity.path),
+        transform = entity.transform,
     )
 }
 
 private fun loadImageFromPath(path: String): ImageBitmap =
     File(path).inputStream().buffered().use(::loadImageBitmap)
 
-private sealed interface EntityPreview {
-    fun draw(drawScope: DrawScope)
+private sealed class EntityPreview {
+    abstract fun draw(drawScope: DrawScope)
 }
 
 private data class GroupPreview(
-    val entities: List<EntityPreview>,
+    val entities: ImmutableList<EntityPreview>,
     val transform: Transform,
-) : EntityPreview {
+) : EntityPreview() {
 
     override fun draw(drawScope: DrawScope) = drawScope.withTransform(transform.action) {
         for (entity in entities) {
@@ -92,7 +105,7 @@ private data class GroupPreview(
 private data class ImagePreview(
     val transform: Transform,
     val image: ImageBitmap,
-) : EntityPreview {
+) : EntityPreview() {
     override fun draw(drawScope: DrawScope) = drawScope.withTransform(transform.action) {
         drawImage(
             image = image,
@@ -105,7 +118,7 @@ private data class ImagePreview(
 
 val Transform.action: DrawTransform.() -> Unit
     get() = {
-        translate(translation.x, translation.y)
+        translate(x, y)
         if (rotation != 0f) {
             rotate(rotation)
         }
