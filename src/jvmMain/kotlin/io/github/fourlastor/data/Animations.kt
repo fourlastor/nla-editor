@@ -39,8 +39,11 @@ data class Animation(
     val duration: DurationAsLong,
     val tracks: Map<Long, EntityTracks>
 ) {
+
+    fun track(entityId: Long) = tracks.orEmpty(entityId)
+
     fun keyFrame(entityId: Long, propertyId: Long, position: Duration, value: Float): Animation {
-        val entityTracks = tracks.getOrElse(entityId) { EntityTracks(emptyMap()) }
+        val entityTracks = tracks.orEmpty(entityId)
         return copy(
             tracks = tracks.plus(
                 entityId to entityTracks.keyFrame(
@@ -51,16 +54,22 @@ data class Animation(
             )
         )
     }
+
+    private fun Map<Long, EntityTracks>.orEmpty(entityId: Long) = getOrElse(entityId) { EntityTracks(emptyMap()) }
 }
 
 @Serializable
 data class EntityTracks(
     val properties: Map<Long, Track>
 ) {
+
+    fun property(propertyId: Long): Track = properties.orEmpty(propertyId)
     fun keyFrame(propertyId: Long, position: Duration, value: Float): EntityTracks {
-        val track = properties.getOrElse(propertyId) { Track(emptyMap()) }
+        val track = properties.orEmpty(propertyId)
         return copy(properties = properties.plus(propertyId to track.keyFrame(position, value)))
     }
+
+    private fun Map<Long, Track>.orEmpty(propertyId: Long) = getOrElse(propertyId) { Track(emptyMap()) }
 }
 
 @Serializable

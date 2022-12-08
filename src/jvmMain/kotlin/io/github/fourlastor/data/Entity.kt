@@ -16,6 +16,7 @@ sealed interface Entity {
     fun x(x: Float): Entity
     fun y(y: Float): Entity
     fun rotation(rotation: Float): Entity
+    fun scale(scale: Float): Entity
     fun name(name: String): Entity
     fun collapsed(collapsed: Boolean): Entity
 
@@ -46,6 +47,7 @@ data class Group(
     override fun rotation(rotation: Float) = copy(transform = transform.rotation(rotation))
 
     override fun name(name: String) = copy(name = name)
+    override fun scale(scale: Float) = copy(transform = transform.scale(scale))
     override fun collapsed(collapsed: Boolean) = copy(collapsed = collapsed)
 }
 
@@ -68,6 +70,8 @@ data class Image(
     override fun y(y: Float) = copy(transform = transform.y(y))
 
     override fun rotation(rotation: Float) = copy(transform = transform.rotation(rotation))
+
+    override fun scale(scale: Float) = copy(transform = transform.scale(scale))
 
     override fun name(name: String) = copy(name = name)
 
@@ -100,4 +104,5 @@ data class Transform(
     fun y(y: Float) = copy(yProperty = yProperty.copy(value = y))
 
     fun rotation(rotation: Float) = copy(rotationProperty = rotationProperty.copy(value = rotation))
+    fun scale(scale: Float) = copy(scaleProperty = scaleProperty.copy(value = scale))
 }

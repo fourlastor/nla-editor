@@ -20,14 +20,12 @@ import io.github.fourlastor.data.Animations
 import io.github.fourlastor.data.Entities
 import io.github.fourlastor.editor.DraggableHandle
 import io.github.fourlastor.editor.KeyFrame
-import io.github.fourlastor.editor.state.toEntitiesState
 import io.kanro.compose.jetbrains.expui.control.Label
 import io.kanro.compose.jetbrains.expui.style.LocalAreaColors
 import io.kanro.compose.jetbrains.expui.theme.DarkTheme
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -40,7 +38,12 @@ fun Timeline(
     animationId: Long,
     animations: Animations,
 ) {
-    val entitiesState by remember(entities) { mutableStateOf(entities.toEntitiesState()) }
+    val state by rememberTimelineState(
+        entities,
+        animations,
+        animationId
+    )
+//    val entitiesState by remember(entities) { mutableStateOf(entities.toEntitiesState()) }
     val secondWidth = 300.dp
     val horizontalScrollState = rememberScrollState(0)
     val coroutineScope = rememberCoroutineScope()
@@ -76,29 +79,25 @@ fun Timeline(
                     LazyColumn(
                         modifier = Modifier.width(trackWidth)
                             .padding(vertical = 4.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalArrangement = Arrangement.spacedBy(2.dp),
                         state = propertyListState,
                         userScrollEnabled = false,
                     ) {
                         items(
-                            count = entitiesState.entities.size,
-                            key = { entitiesState.entities[it].id }
+                            count = state.elements.size,
+                            key = { state.elements[it].key }
                         ) {
-                            Column(
-                                verticalArrangement = Arrangement.spacedBy(2.dp)
-                            ) {
-                                Spacer(
+                            when (val element = state.elements[it]) {
+                                is Spacer -> Spacer(
                                     modifier = Modifier.fillMaxWidth()
-                                        .height(40.dp),
+                                        .height(44.dp),
                                 )
-                                // this should be 1 track per property in the entity
-                                // 3 works because we have x,y,rotation
-                                repeat(3) { index ->
-                                    FrameTrack(
-                                        duration = duration,
-                                        modifier = Modifier.fillMaxWidth()
-                                    ) {
-                                        val location = 1000.milliseconds * index
+
+                                is Track -> FrameTrack(
+                                    duration = duration,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    element.keyFrames.forEach { (location, _) ->
                                         KeyFrame(
                                             modifier = Modifier
                                                 .position(location)
@@ -114,6 +113,7 @@ fun Timeline(
     }
 }
 
+@Composable
 private fun TimeIndicator(duration: Duration, secondWidth: Dp) {
     Box {
         Row {

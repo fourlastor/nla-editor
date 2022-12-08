@@ -63,20 +63,20 @@ private fun PropertiesPaneUi(
         LazyColumn(
             modifier = Modifier.fillMaxWidth()
                 .padding(vertical = 4.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
             state = propertyNamesListState,
             userScrollEnabled = false,
         ) {
-            items(
-                count = state.entities.size,
-                key = { state.entities[it].id }
-            ) { entityIndex ->
-                val entity = state.entities[entityIndex]
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(2.dp)
-                ) {
-                    EntityName(entity, modifier = Modifier.fillMaxWidth(0.3f))
-                    for (property in entity.properties) {
+            for (entity in state.entities) {
+                item(key = "e/${entity.id}") {
+                    EntityName(
+                        entity, modifier = Modifier
+                            .height(44.dp)
+                            .fillMaxWidth(0.3f)
+                    )
+                }
+                for (property in entity.properties) {
+                    item(key = "p/${property.id}") {
                         Property(property, entityUpdater)
                     }
                 }
@@ -174,7 +174,6 @@ private fun EntityName(
 ) {
     Box(
         modifier = modifier
-            .height(40.dp)
             .padding(horizontal = 4.dp),
         contentAlignment = Alignment.CenterStart,
     ) {

@@ -3,6 +3,7 @@ package io.github.fourlastor.editor.properties
 import io.github.fourlastor.data.Entities
 import io.github.fourlastor.data.Entity
 import io.github.fourlastor.data.EntityUpdater
+import io.github.fourlastor.data.PropertyValue
 import io.github.fourlastor.editor.state.ViewState
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
@@ -17,19 +18,22 @@ data class PropertiesState(
     )
 
     sealed class Property(
+        val id: Long,
         val label: String,
     )
 
     class ReadonlyFloatProperty(
+        id: Long,
         label: String,
         val value: Float,
-    ) : Property(label)
+    ) : Property(id, label)
 
     class FloatProperty(
+        id: Long,
         label: String,
         val value: Float,
         val updater: PropertyUpdater<Float>
-    ) : Property(label)
+    ) : Property(id, label)
 
     sealed class PropertyUpdater<T>(
         val id: Long,
@@ -49,16 +53,17 @@ private fun Entity.toEntity(viewState: ViewState): PropertiesState.Entity = Prop
     id = id,
     name = name,
     properties = listOf(
-        floatProperty(viewState, "X", transform.x, XUpdater(id)),
-        floatProperty(viewState, "Y", transform.y, YUpdater(id)),
-        floatProperty(viewState, "Rotation", transform.rotation, RotationUpdater(id)),
+        floatProperty(viewState, "X", transform.xProperty, XUpdater(id)),
+        floatProperty(viewState, "Y", transform.yProperty, YUpdater(id)),
+        floatProperty(viewState, "Rotation", transform.rotationProperty, RotationUpdater(id)),
+        floatProperty(viewState, "Scale", transform.scaleProperty, ScaleUpdater(id)),
     ).toImmutableList()
 )
 
 private fun floatProperty(
     viewState: ViewState,
     label: String,
-    value: Float,
+    value: PropertyValue,
     updater: PropertiesState.PropertyUpdater<Float>
 ): PropertiesState.Property {
     return if (viewState.animations is ViewState.Disabled) {
@@ -71,19 +76,24 @@ private fun floatProperty(
 /** Property affecting directly the entity. */
 private fun editorProperty(
     label: String,
-    value: Float,
+    value: PropertyValue,
     updater: PropertiesState.PropertyUpdater<Float>
 ) = PropertiesState.FloatProperty(
-    label,
-    value,
-    updater
+    id = value.id,
+    label = label,
+    value = value.value,
+    updater = updater,
 )
 
 /** Property affecting animation keys, read only until a keyframe is added at the position. */
 private fun animationProperty(
     label: String,
-    value: Float
-) = PropertiesState.ReadonlyFloatProperty(label, value)
+    value: PropertyValue
+) = PropertiesState.ReadonlyFloatProperty(
+    id = value.id,
+    label = label,
+    value = value.value,
+)
 
 private class XUpdater(id: Long) : PropertiesState.PropertyUpdater<Float>(id) {
     override fun update(value: Float, entityUpdater: EntityUpdater) {
@@ -100,5 +110,11 @@ private class YUpdater(id: Long) : PropertiesState.PropertyUpdater<Float>(id) {
 private class RotationUpdater(id: Long) : PropertiesState.PropertyUpdater<Float>(id) {
     override fun update(value: Float, entityUpdater: EntityUpdater) {
         entityUpdater(id) { it.rotation(value) }
+    }
+}
+
+private class ScaleUpdater(id: Long) : PropertiesState.PropertyUpdater<Float>(id) {
+    override fun update(value: Float, entityUpdater: EntityUpdater) {
+        entityUpdater(id) { it.scale(value) }
     }
 }
