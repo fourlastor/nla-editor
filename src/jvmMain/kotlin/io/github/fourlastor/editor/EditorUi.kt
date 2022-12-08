@@ -1,9 +1,11 @@
 package io.github.fourlastor.editor
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import io.github.fourlastor.data.Animation
@@ -39,16 +41,20 @@ fun EditorUi(
         onUpdateAnimation: (animationId: Long, update: (Animation) -> Animation) -> Unit,
 ) {
     var viewState: ViewState by remember { mutableStateOf(ViewState.initial()) }
+    val animationPropertiesHeight = remember { 30.dp }
+    val timelineScrollbarHeight = remember { 4.dp }
+    val timeTrackHeight = remember { 50.dp }
+    val timeIndicatorHeight = remember { timeTrackHeight + timelineScrollbarHeight }
     Column(
-            modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize()
     ) {
         EditorMode(
-                onToggle = {
-                    viewState =
-                            if (it) viewState.copy(animations = ViewState.Selecting)
-                            else viewState.copy(animations = ViewState.Disabled)
-                },
-                animationState = viewState.animations,
+            onToggle = {
+                viewState =
+                    if (it) viewState.copy(animations = ViewState.Selecting)
+                    else viewState.copy(animations = ViewState.Disabled)
+            },
+            animationState = viewState.animations,
         )
         SyncBottomScrollUi(
                 modifier = Modifier.weight(1f),
@@ -81,33 +87,47 @@ fun EditorUi(
                                     },
                                     onUpdateAnimation = onUpdateAnimation,
                                     onAddAnimation = onAddAnimation,
+                                modifier = Modifier.height(animationPropertiesHeight)
                             )
                             if (animationState is ViewState.Selected) {
                                 Timeline(
-                                        entities = entities,
-                                        propertyListState = listState,
-                                        modifier = Modifier
-                                                .fillMaxSize()
-                                                .padding(start = 4.dp)
-                                                .areaBackground()
-                                                .zIndex(2f),
-                                        animationId = animationState.id,
-                                        animations = animations,
-                                        duration = animations[animationState.id].duration,
+                                    duration = animations[animationState.id].duration,
+                                    entities = entities,
+                                    propertyListState = listState,
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(start = 4.dp)
+                                        .areaBackground()
+                                        .zIndex(2f),
+                                    animationId = animationState.id,
+                                    animations = animations,
+                                    scrollbarHeight = timelineScrollbarHeight,
+                                    timeTrackHeight = timeTrackHeight,
                                 )
                             }
                         }
                     }
                 },
                 bottomRight = { listState ->
-                    PropertiesPane(
+                    Column(
+                        modifier = Modifier.matchParentSize()
+                    ) {
+                        Spacer(
+                            modifier = Modifier
+                                .height(animationPropertiesHeight + timeIndicatorHeight)
+                                .background(Color.Red)
+                        )
+                        PropertiesPane(
                             propertyNamesListState = listState,
-                            modifier = Modifier.matchParentSize().padding(end = 4.dp),
+                            modifier = Modifier.weight(1f)
+                                .fillMaxWidth()
+                                .padding(end = 4.dp),
                             viewState = viewState,
                             entityUpdater = entityUpdater,
                             entities = entities,
                             onAddKeyFrame = onAddKeyFrame,
-                    )
+                        )
+                    }
                 }
         )
     }

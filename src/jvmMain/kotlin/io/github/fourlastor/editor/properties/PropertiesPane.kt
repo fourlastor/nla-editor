@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -30,7 +28,6 @@ import io.github.fourlastor.editor.KeyFrame
 import io.github.fourlastor.editor.TransparentField
 import io.github.fourlastor.editor.state.ViewState
 import io.kanro.compose.jetbrains.expui.control.Label
-import io.kanro.compose.jetbrains.expui.style.areaBackground
 import io.kanro.compose.jetbrains.expui.theme.DarkTheme
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
@@ -63,14 +60,8 @@ private fun PropertiesPaneUi(
     onAddKeyFrame: (animationId: Long, entityId: Long, propertyId: Long, value: Float, position: Duration) -> Unit,
 ) {
     Column(
-        modifier = modifier.fillMaxHeight()
-            .fillMaxWidth()
-            .areaBackground()
+        modifier = modifier
     ) {
-        Spacer(
-            modifier = Modifier.height(54.dp)
-                .fillMaxWidth()
-        )
         LazyColumn(
             modifier = Modifier.fillMaxWidth()
                 .padding(vertical = 4.dp),

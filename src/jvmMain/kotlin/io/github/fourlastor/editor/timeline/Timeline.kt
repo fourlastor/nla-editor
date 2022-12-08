@@ -36,13 +36,14 @@ fun Timeline(
     modifier: Modifier = Modifier,
     animationId: Long,
     animations: Animations,
+    scrollbarHeight: Dp,
+    timeTrackHeight: Dp,
 ) {
     val state by rememberTimelineState(
         entities,
         animations,
         animationId
     )
-//    val entitiesState by remember(entities) { mutableStateOf(entities.toEntitiesState()) }
     val secondWidth = 300.dp
     val horizontalScrollState = rememberScrollState(0)
     val coroutineScope = rememberCoroutineScope()
@@ -52,7 +53,7 @@ fun Timeline(
         HorizontalScrollbar(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(4.dp),
+                .height(scrollbarHeight),
             adapter = rememberScrollbarAdapter(horizontalScrollState)
         )
         BoxWithConstraints(
@@ -74,10 +75,10 @@ fun Timeline(
             ) {
                 Scrubber(trackWidth, trackWidthPx)
                 Column(modifier = Modifier.fillMaxSize()) {
-                    TimeIndicator(duration, secondWidth)
+                    TimeIndicator(duration, secondWidth, timeTrackHeight)
                     LazyColumn(
                         modifier = Modifier.width(trackWidth)
-                            .padding(vertical = 4.dp),
+                            .padding(vertical = scrollbarHeight),
                         verticalArrangement = Arrangement.spacedBy(2.dp),
                         state = propertyListState,
                         userScrollEnabled = false,
@@ -114,7 +115,7 @@ fun Timeline(
 }
 
 @Composable
-private fun TimeIndicator(duration: Duration, secondWidth: Dp) {
+private fun TimeIndicator(duration: Duration, secondWidth: Dp, height: Dp) {
     Box {
         Row {
             repeat(duration.inWholeSeconds.toInt()) { counter ->
@@ -128,7 +129,7 @@ private fun TimeIndicator(duration: Duration, secondWidth: Dp) {
             }
         }
         val color = LocalAreaColors.current.text
-        Canvas(modifier = Modifier.fillMaxWidth().height(50.dp)) {
+        Canvas(modifier = Modifier.fillMaxWidth().height(height)) {
             val secondOffset = secondWidth.toPx()
             for (s in 0 until duration.inWholeSeconds) {
                 val xOffset = s * secondOffset
