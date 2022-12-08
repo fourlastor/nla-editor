@@ -92,10 +92,7 @@ fun EditorUi(
                             onUpdateAnimation = onUpdateAnimation,
                             onAddAnimation = onAddAnimation,
                             modifier = Modifier.height(animationPropertiesHeight),
-                            onSeek = { animationId, position ->
-                                println("Seeking $position")
-                                seek(animationId, position)
-                            }
+                            onSeek = { animationId, position -> seek(animationId, position) }
                         )
                         if (animationState is ViewState.Selected) {
                             Timeline(
@@ -111,9 +108,7 @@ fun EditorUi(
                                 scrollbarHeight = timelineScrollbarHeight,
                                 timeTrackHeight = timeTrackHeight,
                                 animationState = animationState,
-                            ) {
-                                seek(animationState.id, it)
-                            }
+                            ) { seek(animationState.id, it) }
                         }
                     }
                 }
