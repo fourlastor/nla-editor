@@ -129,9 +129,9 @@ class ViewModel {
     )
 
     private fun frame() = Frame(
-        rowsProperty = property(2f),
-        columnsProperty = property(2f),
-        frameNumberProperty = property(2f),
+        rowsProperty = property(1f),
+        columnsProperty = property(1f),
+        frameNumberProperty = property(0f),
     )
 
     private fun property(value: Float) = PropertyValue(

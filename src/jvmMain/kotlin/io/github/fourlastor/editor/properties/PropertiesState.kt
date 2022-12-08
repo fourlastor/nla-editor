@@ -4,6 +4,7 @@ import io.github.fourlastor.data.Animations
 import io.github.fourlastor.data.Entities
 import io.github.fourlastor.data.Entity
 import io.github.fourlastor.data.EntityUpdater
+import io.github.fourlastor.data.Image
 import io.github.fourlastor.data.PropertyValue
 import io.github.fourlastor.editor.state.ViewState
 import kotlinx.collections.immutable.ImmutableList
@@ -60,17 +61,25 @@ fun toPropertiesState(entities: Entities, animations: Animations, viewState: Vie
         .toImmutableList()
 )
 
-private fun Entity.toEntity(viewState: ViewState, animations: Animations): PropertiesState.Entity =
-    PropertiesState.Entity(
+private fun Entity.toEntity(viewState: ViewState, animations: Animations): PropertiesState.Entity {
+
+    val imageProperties = if (this is Image) listOf(
+        floatProperty(viewState, "Rows", frame.rowsProperty, RowUpdater(id), animations),
+        floatProperty(viewState, "Columns", frame.columnsProperty, ColumnUpdater(id), animations),
+        floatProperty(viewState, "Frame", frame.frameNumberProperty, FrameNumberUpdater(id), animations),
+    ) else emptyList()
+
+    return PropertiesState.Entity(
         id = id,
         name = name,
-        properties = listOf(
+        properties = (listOf(
             floatProperty(viewState, "X", transform.xProperty, XUpdater(id), animations),
             floatProperty(viewState, "Y", transform.yProperty, YUpdater(id), animations),
             floatProperty(viewState, "Rotation", transform.rotationProperty, RotationUpdater(id), animations),
             floatProperty(viewState, "Scale", transform.scaleProperty, ScaleUpdater(id), animations),
-        ).toImmutableList()
+        ) + imageProperties).toImmutableList()
     )
+}
 
 private fun Entity.floatProperty(
     viewState: ViewState,
@@ -142,5 +151,32 @@ private class RotationUpdater(id: Long) : PropertiesState.PropertyUpdater<Float>
 private class ScaleUpdater(id: Long) : PropertiesState.PropertyUpdater<Float>(id) {
     override fun update(value: Float, entityUpdater: EntityUpdater) {
         entityUpdater(id) { it.scale(value) }
+    }
+}
+
+private class RowUpdater(id: Long) : PropertiesState.PropertyUpdater<Float>(id) {
+    override fun update(value: Float, entityUpdater: EntityUpdater) {
+        entityUpdater(id) {
+            if (it is Image) it.rows(value.toInt())
+            else it
+        }
+    }
+}
+
+private class ColumnUpdater(id: Long) : PropertiesState.PropertyUpdater<Float>(id) {
+    override fun update(value: Float, entityUpdater: EntityUpdater) {
+        entityUpdater(id) {
+            if (it is Image) it.columns(value.toInt())
+            else it
+        }
+    }
+}
+
+private class FrameNumberUpdater(id: Long) : PropertiesState.PropertyUpdater<Float>(id) {
+    override fun update(value: Float, entityUpdater: EntityUpdater) {
+        entityUpdater(id) {
+            if (it is Image) it.frameNumber(value.toInt())
+            else it
+        }
     }
 }

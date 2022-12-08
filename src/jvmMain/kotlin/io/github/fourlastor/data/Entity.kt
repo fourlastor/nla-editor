@@ -78,6 +78,10 @@ data class Image(
 
     override fun collapsed(collapsed: Boolean) = copy(collapsed = collapsed)
 
+    fun rows(rows: Int) = copy(frame = frame.copy(rowsProperty = frame.rowsProperty.copy(value = rows.toFloat())))
+    fun columns(columns: Int) = copy(frame = frame.copy(columnsProperty = frame.columnsProperty.copy(value = columns.toFloat())))
+    fun frameNumber(frameNumber: Int) = copy(frame = frame.copy(frameNumberProperty = frame.frameNumberProperty.copy(value = frameNumber.toFloat())))
+
 }
 
 /**
