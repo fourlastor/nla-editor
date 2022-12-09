@@ -44,6 +44,7 @@ kotlin {
                 implementation(libs.decomposeCompose)
                 implementation(libs.expui)
                 implementation(libs.immutableCollections)
+                implementation(libs.okio)
                 implementation(libs.serializationJson)
             }
         }
