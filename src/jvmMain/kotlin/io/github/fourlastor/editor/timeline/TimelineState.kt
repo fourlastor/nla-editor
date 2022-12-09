@@ -7,6 +7,7 @@ import io.github.fourlastor.data.Animation
 import io.github.fourlastor.data.Animations
 import io.github.fourlastor.data.Entities
 import io.github.fourlastor.data.Entity
+import io.github.fourlastor.data.Image
 import io.github.fourlastor.editor.state.ViewState
 import io.github.fourlastor.system.serializer.DurationAsLong
 import kotlinx.collections.immutable.ImmutableList
@@ -50,37 +51,80 @@ fun rememberTimelineState(
     }
 }
 
-private fun Entity.toTimelineElements(animation: Animation): List<TimelineElement> = listOf(
-    Spacer(id),
-    Track(
-        transform.xProperty.id,
-        animation.keyFrames(
-            entityId = id,
-            propertyId = transform.xProperty.id,
-        )
-    ),
-    Track(
-        transform.yProperty.id,
-        animation.keyFrames(
-            entityId = id,
-            propertyId = transform.yProperty.id,
-        )
-    ),
-    Track(
-        transform.rotationProperty.id,
-        animation.keyFrames(
-            entityId = id,
-            propertyId = transform.rotationProperty.id,
-        )
-    ),
-    Track(
-        transform.scaleProperty.id,
-        animation.keyFrames(
-            entityId = id,
-            propertyId = transform.scaleProperty.id,
-        )
+private fun Entity.toTimelineElements(animation: Animation): List<TimelineElement> {
+    /* Couldn't get this working - first listOf returns List<Any>
+    val trackElements = listOf(
+        animation.tracks.values.forEach { entityTracks ->
+            entityTracks.properties.keys.forEach { propertyId ->
+                Track(
+                    propertyId,
+                    animation.keyFrames(
+                        entityId = id,
+                        propertyId = propertyId,
+                    )
+                )
+            }
+        }
     )
-)
+    return listOf(Spacer(id)) + trackElements
+    */
+    val trackElements = listOf(
+        Spacer(id),
+        Track(
+            transform.xProperty.id,
+            animation.keyFrames(
+                entityId = id,
+                propertyId = transform.xProperty.id,
+            )
+        ),
+        Track(
+            transform.yProperty.id,
+            animation.keyFrames(
+                entityId = id,
+                propertyId = transform.yProperty.id,
+            )
+        ),
+        Track(
+            transform.rotationProperty.id,
+            animation.keyFrames(
+                entityId = id,
+                propertyId = transform.rotationProperty.id,
+            )
+        ),
+        Track(
+            transform.scaleProperty.id,
+            animation.keyFrames(
+                entityId = id,
+                propertyId = transform.scaleProperty.id,
+            )
+        ),
+    )
+    val imageTrackElements = if (this is Image) listOf(
+        Track(
+            this.frame.rowsProperty.id,
+            animation.keyFrames(
+                entityId = id,
+                propertyId = this.frame.rowsProperty.id,
+            )
+        ),
+        Track(
+            this.frame.columnsProperty.id,
+            animation.keyFrames(
+                entityId = id,
+                propertyId = this.frame.columnsProperty.id,
+            )
+        ),
+        Track(
+            this.frame.frameNumberProperty.id,
+            animation.keyFrames(
+                entityId = id,
+                propertyId = this.frame.frameNumberProperty.id,
+            )
+        ),
+    ) else emptyList()
+
+    return trackElements + imageTrackElements
+}
 
 fun Animation.keyFrames(entityId: Long, propertyId: Long): ImmutableList<Pair<DurationAsLong, Float>> = track(entityId)
     .property(propertyId)
