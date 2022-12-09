@@ -111,13 +111,21 @@ private data class ImagePreview(
     val frame: Frame,
 ) : EntityPreview() {
 
+    val Frame.maxNumberFrames: Int
+        get() {
+            return columns * rows
+        }
+    val Frame.frameNumberAdjusted: Int
+        get() {
+            return frameNumber % maxNumberFrames
+        }
     val Frame.width: Int
         get() {
-            return image.width / frame.columns
+            return image.width / columns
         }
     val Frame.left: Int
         get() {
-            return width * (frame.frameNumber % frame.rows)
+            return width * (frameNumberAdjusted % columns)
         }
     val Frame.right: Int
         get() {
@@ -125,11 +133,11 @@ private data class ImagePreview(
         }
     val Frame.height: Int
         get() {
-            return image.height / frame.rows
+            return image.height / rows
         }
     val Frame.top: Int
         get() {
-            return height * (frame.frameNumber / frame.columns)
+            return height * (frameNumberAdjusted / columns)
         }
     val Frame.bottom: Int
         get() {
