@@ -27,9 +27,6 @@ class NavHostComponent(
         childFactory = ::createScreenComponent
     )
 
-    /**
-     * Factory function to create screen from given ScreenConfig
-     */
     private fun createScreenComponent(
         screenConfig: ScreenConfig,
         componentContext: ComponentContext
