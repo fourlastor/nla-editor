@@ -12,6 +12,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
+import kotlinx.serialization.json.encodeToStream
 import okio.FileSystem
 import okio.Path.Companion.toPath
 import kotlin.time.Duration
@@ -52,12 +53,36 @@ class ViewModel(
     fun load(path: String) {
         scope.launch {
             withContext(Dispatchers.IO) {
-                fileSystem.read(path.toPath()) {
-                    val project = Json.decodeFromStream(
-                        stream = inputStream(),
-                        deserializer = PersistableProject.serializer()
-                    ).migrateToLatest()
-                    load(project)
+                val projectPath = path.toPath()
+                if (fileSystem.exists(projectPath)) {
+                    fileSystem.read(projectPath) {
+                        inputStream().use {
+                            Json.decodeFromStream(
+                                stream = it,
+                                deserializer = PersistableProject.serializer()
+                            ).migrateToLatest()
+                        }.also {
+                            load(it)
+                        }
+                    }
+                } else {
+                    fileSystem.write(projectPath) {
+                        outputStream().use {
+                            val project = LatestProject(
+                                entities.value,
+                                animations.value,
+                                entityIds.value,
+                                propertyIds.value,
+                                animationIds.value,
+                            )
+                            Json.encodeToStream(
+                                value = project,
+                                stream = it,
+                                serializer = PersistableProject.serializer(),
+                            )
+                            load(project)
+                        }
+                    }
                 }
             }
         }
