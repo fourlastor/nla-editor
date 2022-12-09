@@ -13,6 +13,7 @@ import kotlin.time.Duration
 
 class EditorComponent(
     componentContext: ComponentContext,
+    private val onLoad: () -> Unit,
 ) : Component, ComponentContext by componentContext {
 
     private val viewModel = ViewModel()
@@ -20,13 +21,10 @@ class EditorComponent(
     /** Local state, it's used to display or not the save popup. */
     private var saveRequested by mutableStateOf(false)
 
-    /** Local state, it's used to display or not the load popup. */
-    private var loadRequested by mutableStateOf(false)
-
     @Composable
     override fun toolbar() {
         EditorToolbar(
-            onLoad = { loadRequested = true },
+            onLoad = onLoad,
             onSave = { saveRequested = true }
         )
     }
@@ -37,7 +35,6 @@ class EditorComponent(
         AnimationEditor(
             loadable = project,
             saveRequested = saveRequested,
-            loadRequested = loadRequested,
             entityUpdater = { id, update -> viewModel.updateEntity(id, update) },
             onAddGroup = { viewModel.group(it, "Group") },
             onDeleteEntity = { viewModel.deleteEntity(it) },
@@ -47,9 +44,7 @@ class EditorComponent(
             onAddKeyFrame = { animationId: Long, entityId: Long, propertyId: Long, value: Float, position: Duration ->
                 viewModel.keyFrame(animationId, entityId, propertyId, position, value)
             },
-            onUpdateAnimation = { id, update -> viewModel.updateAnimation(id, update) },
-            onFinishLoad = { loadRequested = false },
-            onFinishSave = { saveRequested = false }
-        )
+            onUpdateAnimation = { id, update -> viewModel.updateAnimation(id, update) }
+        ) { saveRequested = false }
     }
 }

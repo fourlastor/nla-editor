@@ -4,8 +4,7 @@ import androidx.compose.runtime.Composable
 
 interface Component {
     @Composable
-    fun toolbar() {
-    }
+    fun toolbar()
 
     @Composable
     fun content()

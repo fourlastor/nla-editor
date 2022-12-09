@@ -9,7 +9,6 @@ import io.github.fourlastor.data.Animation
 import io.github.fourlastor.data.EntityUpdater
 import io.github.fourlastor.data.LatestProject
 import io.github.fourlastor.data.LoadableProject
-import io.github.fourlastor.editor.save.LoadProject
 import io.github.fourlastor.editor.save.SaveProject
 import kotlin.time.Duration
 
@@ -18,7 +17,6 @@ import kotlin.time.Duration
 fun AnimationEditor(
     loadable: LoadableProject,
     entityUpdater: EntityUpdater,
-    loadRequested: Boolean,
     saveRequested: Boolean,
     onAddGroup: (parentId: Long) -> Unit,
     onDeleteEntity: (id: Long) -> Unit,
@@ -27,7 +25,6 @@ fun AnimationEditor(
     onAddImage: (parentId: Long, name: String, path: String) -> Unit,
     onAddKeyFrame: (animationId: Long, entityId: Long, propertyId: Long, value: Float, position: Duration) -> Unit,
     onUpdateAnimation: (animationId: Long, update: (Animation) -> Animation) -> Unit,
-    onFinishLoad: () -> Unit,
     onFinishSave: () -> Unit,
 ) {
     if (loadable !is LoadableProject.Loaded) {
@@ -50,19 +47,6 @@ fun AnimationEditor(
         onAddKeyFrame = onAddKeyFrame,
         onUpdateAnimation = onUpdateAnimation,
     )
-    if (loadRequested) {
-        LoadProject(
-            onSuccess = {
-                onLoadProject(it)
-                onFinishLoad()
-            },
-            onFailure = {
-                println("Failed to load because $it")
-                onFinishLoad()
-            },
-            onCancel = { onFinishLoad() }
-        )
-    }
     if (saveRequested) {
         SaveProject(
             project = project,
