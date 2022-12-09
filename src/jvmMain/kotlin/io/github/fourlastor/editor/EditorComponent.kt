@@ -47,12 +47,11 @@ class EditorComponent(
         val project by viewModel.project.collectAsState(LoadableProject.Loading)
         AnimationEditor(
             loadable = project,
-            saveRequested = saveRequested,
             entityUpdater = { id, update -> viewModel.updateEntity(id, update) },
+            saveRequested = saveRequested,
             onAddGroup = { viewModel.group(it, "Group") },
             onDeleteEntity = { viewModel.deleteEntity(it) },
             onAddAnimation = { name, duration -> viewModel.animation(name, duration) },
-            onLoadProject = { viewModel.load(it) },
             onAddImage = { parentId: Long, name: String, path: String -> viewModel.image(parentId, name, path) },
             onAddKeyFrame = { animationId: Long, entityId: Long, propertyId: Long, value: Float, position: Duration ->
                 viewModel.keyFrame(animationId, entityId, propertyId, position, value)

@@ -7,7 +7,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import io.github.fourlastor.data.Animation
 import io.github.fourlastor.data.EntityUpdater
-import io.github.fourlastor.data.LatestProject
 import io.github.fourlastor.data.LoadableProject
 import io.github.fourlastor.editor.save.SaveProject
 import kotlin.time.Duration
@@ -21,7 +20,6 @@ fun AnimationEditor(
     onAddGroup: (parentId: Long) -> Unit,
     onDeleteEntity: (id: Long) -> Unit,
     onAddAnimation: (name: String, duration: Duration) -> Unit,
-    onLoadProject: (project: LatestProject) -> Unit,
     onAddImage: (parentId: Long, name: String, path: String) -> Unit,
     onAddKeyFrame: (animationId: Long, entityId: Long, propertyId: Long, value: Float, position: Duration) -> Unit,
     onUpdateAnimation: (animationId: Long, update: (Animation) -> Animation) -> Unit,
