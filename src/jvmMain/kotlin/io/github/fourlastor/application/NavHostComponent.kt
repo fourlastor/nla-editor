@@ -31,28 +31,26 @@ class NavHostComponent(
     private fun createScreenComponent(
         screenConfig: ScreenConfig,
         componentContext: ComponentContext
-    ): Component {
-        return when (screenConfig) {
+    ): Component = when (screenConfig) {
 
-            is ScreenConfig.New -> NewProjectComponent(
-                context = componentContext,
-                onNewProject = ::openProject
-            )
+        is ScreenConfig.New -> NewProjectComponent(
+            context = componentContext,
+            onNewProject = ::openProject
+        )
 
-            is ScreenConfig.Project -> EditorComponent(
-                componentContext,
-                onLoad = ::loadProject
-            )
+        is ScreenConfig.Project -> EditorComponent(
+            componentContext,
+            path = screenConfig.name
+        )
 
-            is ScreenConfig.Load -> LoadComponent(
-                onLoad = ::openProject,
-                onCancel = { navigation.pop() },
-                context = componentContext
-            )
-        }
+        is ScreenConfig.Load -> LoadComponent(
+            onLoad = ::openProject,
+            onCancel = { navigation.pop() },
+            context = componentContext
+        )
     }
 
-    private fun loadProject() {
+    fun loadProject() {
         navigation.push(ScreenConfig.Load)
     }
 
@@ -60,22 +58,13 @@ class NavHostComponent(
         navigation.replaceAll(ScreenConfig.Project(path))
     }
 
+
     @Composable
-    override fun toolbar() {
+    override fun render() {
         Children(
             stack = stack,
         ) {
-            it.instance.toolbar()
-        }
-    }
-
-
-    @Composable
-    override fun content() {
-        Children(
-            stack = stack,
-        ) {
-            it.instance.content()
+            it.instance.render()
         }
     }
 

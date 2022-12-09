@@ -18,7 +18,7 @@ import io.kanro.compose.jetbrains.expui.style.areaBackground
 
 /** Toolbar on top of the editor, it contains save and load buttons. */
 @Composable
-fun EditorToolbar(onLoad: () -> Unit, onSave: () -> Unit) {
+fun EditorToolbar(onLoad: () -> Unit, onSave: () -> Unit = {}) {
     Row(
         modifier = Modifier
             .fillMaxSize()

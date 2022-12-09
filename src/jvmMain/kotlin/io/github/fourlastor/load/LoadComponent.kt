@@ -9,12 +9,9 @@ class LoadComponent(
     private val onCancel: () -> Unit,
     context: ComponentContext,
 ) : Component, ComponentContext by context {
-    @Composable
-    override fun toolbar() {
-    }
 
     @Composable
-    override fun content() {
+    override fun render() {
         LoadProject(
             onSuccess = onLoad,
             onCancel = onCancel

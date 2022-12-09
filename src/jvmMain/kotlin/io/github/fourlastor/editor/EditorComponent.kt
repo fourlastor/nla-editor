@@ -6,31 +6,44 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.arkivanov.decompose.ComponentContext
+import com.arkivanov.essenty.lifecycle.doOnCreate
+import com.arkivanov.essenty.lifecycle.doOnDestroy
 import io.github.fourlastor.application.Component
 import io.github.fourlastor.data.LoadableProject
 import io.github.fourlastor.data.ViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
+import okio.FileSystem
 import kotlin.time.Duration
 
 class EditorComponent(
     componentContext: ComponentContext,
-    private val onLoad: () -> Unit,
+    path: String,
 ) : Component, ComponentContext by componentContext {
 
-    private val viewModel = ViewModel()
+    private val scope = CoroutineScope(Dispatchers.Default + Job())
+    private val viewModel = ViewModel(
+        scope = scope,
+        fileSystem = FileSystem.SYSTEM,
+    )
 
     /** Local state, it's used to display or not the save popup. */
     private var saveRequested by mutableStateOf(false)
 
-    @Composable
-    override fun toolbar() {
-        EditorToolbar(
-            onLoad = onLoad,
-            onSave = { saveRequested = true }
-        )
+    init {
+        lifecycle.doOnCreate {
+            viewModel.load(path)
+        }
+
+        lifecycle.doOnDestroy {
+            scope.cancel()
+        }
     }
 
     @Composable
-    override fun content() {
+    override fun render() {
         val project by viewModel.project.collectAsState(LoadableProject.Loading)
         AnimationEditor(
             loadable = project,

@@ -7,6 +7,7 @@ import com.arkivanov.decompose.ExperimentalDecomposeApi
 import com.arkivanov.decompose.extensions.compose.jetbrains.lifecycle.LifecycleController
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import io.github.fourlastor.application.NavHostComponent
+import io.github.fourlastor.editor.EditorToolbar
 import io.kanro.compose.jetbrains.expui.theme.DarkTheme
 import io.kanro.compose.jetbrains.expui.window.JBWindow
 import javax.swing.SwingUtilities
@@ -27,11 +28,13 @@ fun main() {
                 exitProcess(0)
             },
             mainToolBar = {
-                root.toolbar()
+                EditorToolbar(
+                    onLoad = { root.loadProject() },
+                )
             }
         ) {
             LifecycleController(lifecycle, windowState)
-            root.content()
+            root.render()
         }
     }
 }

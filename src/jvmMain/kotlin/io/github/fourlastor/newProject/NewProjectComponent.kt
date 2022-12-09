@@ -10,11 +10,7 @@ class NewProjectComponent(
 ) : Component, ComponentContext by context {
 
     @Composable
-    override fun toolbar() {
-    }
-
-    @Composable
-    override fun content() {
+    override fun render() {
         NewProject(onNewProject = onNewProject)
     }
 }
