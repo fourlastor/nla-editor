@@ -15,14 +15,12 @@ import io.github.fourlastor.editor.icon.SmallIcon
 import io.kanro.compose.jetbrains.expui.control.ActionButton
 import io.kanro.compose.jetbrains.expui.control.Label
 import io.kanro.compose.jetbrains.expui.style.areaBackground
-import io.kanro.compose.jetbrains.expui.window.MainToolBarScope
 
 /** Toolbar on top of the editor, it contains save and load buttons. */
 @Composable
-fun MainToolBarScope.EditorToolbar(onLoad: () -> Unit, onSave: () -> Unit) {
+fun EditorToolbar(onLoad: () -> Unit, onSave: () -> Unit) {
     Row(
         modifier = Modifier
-            .mainToolBarItem(alignment = Alignment.End)
             .fillMaxSize()
             .padding(4.dp)
             .zIndex(2f)
