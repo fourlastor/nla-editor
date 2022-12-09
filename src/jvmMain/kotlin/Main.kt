@@ -10,10 +10,12 @@ import io.github.fourlastor.application.NavHostComponent
 import io.kanro.compose.jetbrains.expui.theme.DarkTheme
 import io.kanro.compose.jetbrains.expui.window.JBWindow
 import javax.swing.SwingUtilities
+import javax.swing.UIManager
 import kotlin.system.exitProcess
 
 @OptIn(ExperimentalDecomposeApi::class)
 fun main() {
+    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName())
     val lifecycle = LifecycleRegistry()
     val root = runOnMainThreadBlocking { NavHostComponent(DefaultComponentContext(lifecycle)) }
     application {

@@ -1,56 +1,58 @@
 package io.github.fourlastor.system
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.window.AwtWindow
 import kotlinx.coroutines.launch
-import java.awt.FileDialog
+import kotlinx.coroutines.withContext
+import org.jetbrains.skiko.MainUIDispatcher
 import java.awt.Frame
 import java.io.File
+import javax.swing.JFileChooser
 
 @Composable
 fun FileLoadDialog(
     parent: Frame? = null,
     onCloseRequest: (result: File?) -> Unit,
+    config: JFileChooser.() -> Unit = {},
 ) {
-    val scope = rememberCoroutineScope()
-    AwtWindow(
-        create = {
-            object : FileDialog(parent, "Choose a file", LOAD) {
-                override fun setVisible(value: Boolean) {
-                    super.setVisible(value)
-                    if (!value) {
-                        scope.launch {
-                            onCloseRequest(files.getOrNull(0))
-                        }
-                    }
-                }
-            }
-        },
-        dispose = FileDialog::dispose
-    )
+    FileDialog(config, onCloseRequest) { it.showOpenDialog(parent) }
 }
 
 @Composable
 fun FileSaveDialog(
     parent: Frame? = null,
     onCloseRequest: (result: File?) -> Unit,
+    config: JFileChooser.() -> Unit = {},
+) {
+    FileDialog(config, onCloseRequest) { it.showSaveDialog(parent) }
+}
+
+@Composable
+private fun FileDialog(
+    config: JFileChooser.() -> Unit,
+    onCloseRequest: (result: File?) -> Unit,
+    action: (JFileChooser) -> Int,
 ) {
     val scope = rememberCoroutineScope()
-
-    AwtWindow(
-        create = {
-            object : FileDialog(parent, "Choose a file", SAVE) {
-                override fun setVisible(value: Boolean) {
-                    super.setVisible(value)
-                    if (!value) {
-                        scope.launch {
-                            onCloseRequest(files.getOrNull(0))
-                        }
-                    }
-                }
+    DisposableEffect(Unit) {
+        val job = scope.launch {
+            val chooser = JFileChooser().apply(config)
+            val result = withContext(MainUIDispatcher) {
+                action(chooser)
             }
-        },
-        dispose = FileDialog::dispose
-    )
+            val file = when (result) {
+                JFileChooser.APPROVE_OPTION -> {
+                    chooser.selectedFile
+                }
+
+                else -> null
+            }
+            onCloseRequest(file)
+        }
+
+        onDispose {
+            job.cancel()
+        }
+    }
 }

@@ -28,12 +28,14 @@ fun NewProject(
         }
     }
     if (dialogVisible) {
-        FileSaveDialog {
-            if (it != null) {
-                onNewProject(it.absolutePath)
-            } else {
-                dialogVisible = false
+        FileSaveDialog(
+            onCloseRequest = {
+                if (it != null) {
+                    onNewProject(it.absolutePath)
+                } else {
+                    dialogVisible = false
+                }
             }
-        }
+        )
     }
 }

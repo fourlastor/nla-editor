@@ -42,8 +42,13 @@ fun AnimationEditor(
         onUpdateAnimation = onUpdateAnimation,
     )
 
-    AddImage(newImageParentId, onAddImage = { parentId, name, path ->
-        onAddImage(parentId, name, path)
-        newImageParentId = null
-    }, onCancel = { newImageParentId = null })
+    AddImage(
+        parentId = newImageParentId,
+        projectPath = loadable.path.parent!!.toString(),
+        onAddImage = { parentId, name, path ->
+            onAddImage(parentId, name, path)
+            newImageParentId = null
+        },
+        onCancel = { newImageParentId = null }
+    )
 }
