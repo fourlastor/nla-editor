@@ -13,6 +13,8 @@ import com.arkivanov.essenty.parcelable.Parcelable
 import io.github.fourlastor.editor.EditorComponent
 import io.github.fourlastor.load.LoadComponent
 import io.github.fourlastor.newProject.NewProjectComponent
+import io.github.fourlastor.toolbar.Toolbar
+import io.github.fourlastor.toolbar.ToolbarButton
 
 @OptIn(ExperimentalDecomposeApi::class)
 class NavHostComponent(
@@ -58,6 +60,17 @@ class NavHostComponent(
         navigation.replaceAll(ScreenConfig.Project(path))
     }
 
+    @Composable
+    override fun toolbar() {
+        Children(
+            stack = stack,
+        ) {
+            Toolbar {
+                ToolbarButton("Load", "icons/load.svg", onClick = ::loadProject)
+                it.instance.toolbar()
+            }
+        }
+    }
 
     @Composable
     override fun render() {

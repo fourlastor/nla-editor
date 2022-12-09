@@ -5,5 +5,9 @@ import androidx.compose.runtime.Composable
 interface Component {
 
     @Composable
+    fun toolbar() {
+    }
+
+    @Composable
     fun render()
 }

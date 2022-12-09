@@ -14,12 +14,13 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
 import okio.FileSystem
-import okio.Path.Companion.toPath
+import okio.Path
 import kotlin.time.Duration
 
 class ViewModel(
     private val scope: CoroutineScope,
     private val fileSystem: FileSystem,
+    private val path: Path,
 ) {
     private val entityIds = MutableStateFlow(0L)
     private val propertyIds = MutableStateFlow(0L)
@@ -40,50 +41,48 @@ class ViewModel(
         get() = combine(
             entities,
             animations,
-            entityIds,
-            animationIds,
-            propertyIds
-        ) { entities, animations, entityId, animationId, propertyId ->
-            LoadableProject.Loaded(
-                PersistableProject.V1(entities, animations, entityId, animationId, propertyId)
-            )
+        ) { entities, animations ->
+            LoadableProject.Loaded(entities, animations)
         }
 
     @OptIn(ExperimentalSerializationApi::class)
-    fun load(path: String) {
+    fun load() {
         scope.launch {
             withContext(Dispatchers.IO) {
-                val projectPath = path.toPath()
-                if (fileSystem.exists(projectPath)) {
-                    fileSystem.read(projectPath) {
+                if (fileSystem.exists(path)) {
+                    fileSystem.read(path) {
                         inputStream().use {
                             Json.decodeFromStream(
                                 stream = it,
                                 deserializer = PersistableProject.serializer()
                             ).migrateToLatest()
                         }.also {
-                            load(it)
+                            updateWith(it)
                         }
                     }
                 } else {
-                    fileSystem.write(projectPath) {
-                        outputStream().use {
-                            val project = LatestProject(
-                                entities.value,
-                                animations.value,
-                                entityIds.value,
-                                propertyIds.value,
-                                animationIds.value,
-                            )
-                            Json.encodeToStream(
-                                value = project,
-                                stream = it,
-                                serializer = PersistableProject.serializer(),
-                            )
-                            load(project)
-                        }
-                    }
+                    save()
                 }
+            }
+        }
+    }
+
+    @OptIn(ExperimentalSerializationApi::class)
+    fun save() {
+        fileSystem.write(path) {
+            val project = LatestProject(
+                entities.value,
+                animations.value,
+                entityIds.value,
+                propertyIds.value,
+                animationIds.value,
+            )
+            outputStream().use {
+                Json.encodeToStream(
+                    value = project,
+                    stream = it,
+                    serializer = PersistableProject.serializer(),
+                )
             }
         }
     }
@@ -93,7 +92,7 @@ class ViewModel(
         is PersistableProject.V1 -> this
     }
 
-    fun load(project: LatestProject) {
+    private fun updateWith(project: LatestProject) {
         entities.update { project.entities }
         animations.update { project.animations }
         entityIds.update { project.lastEntityId }

@@ -8,7 +8,6 @@ import androidx.compose.runtime.setValue
 import io.github.fourlastor.data.Animation
 import io.github.fourlastor.data.EntityUpdater
 import io.github.fourlastor.data.LoadableProject
-import io.github.fourlastor.editor.save.SaveProject
 import kotlin.time.Duration
 
 
@@ -16,21 +15,18 @@ import kotlin.time.Duration
 fun AnimationEditor(
     loadable: LoadableProject,
     entityUpdater: EntityUpdater,
-    saveRequested: Boolean,
     onAddGroup: (parentId: Long) -> Unit,
     onDeleteEntity: (id: Long) -> Unit,
     onAddAnimation: (name: String, duration: Duration) -> Unit,
     onAddImage: (parentId: Long, name: String, path: String) -> Unit,
     onAddKeyFrame: (animationId: Long, entityId: Long, propertyId: Long, value: Float, position: Duration) -> Unit,
     onUpdateAnimation: (animationId: Long, update: (Animation) -> Animation) -> Unit,
-    onFinishSave: () -> Unit,
 ) {
     if (loadable !is LoadableProject.Loaded) {
         return
     }
-    val project = loadable.result
-    val animations = project.animations
-    val entities = project.entities
+    val animations = loadable.animations
+    val entities = loadable.entities
 
     /** Local state. When this is set, a "new entity" popup is displayed. */
     var newImageParentId: Long? by remember { mutableStateOf(null) }
@@ -45,20 +41,6 @@ fun AnimationEditor(
         onAddKeyFrame = onAddKeyFrame,
         onUpdateAnimation = onUpdateAnimation,
     )
-    if (saveRequested) {
-        SaveProject(
-            project = project,
-            onSuccess = {
-                println("Saved project successfully.")
-                onFinishSave()
-            },
-            onFailure = {
-                println("Failed to save because $it")
-                onFinishSave()
-            },
-            onCancel = { onFinishSave() }
-        )
-    }
 
     AddImage(newImageParentId, onAddImage = { parentId, name, path ->
         onAddImage(parentId, name, path)
