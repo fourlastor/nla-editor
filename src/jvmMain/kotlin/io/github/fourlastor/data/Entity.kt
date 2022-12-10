@@ -78,10 +78,9 @@ data class Image(
 
     override fun collapsed(collapsed: Boolean) = copy(collapsed = collapsed)
 
-    fun rows(rows: Int) = copy(frame = frame.copy(rowsProperty = frame.rowsProperty.copy(value = rows.toFloat())))
-    fun columns(columns: Int) = copy(frame = frame.copy(columnsProperty = frame.columnsProperty.copy(value = columns.toFloat())))
-    fun frameNumber(frameNumber: Int) = copy(frame = frame.copy(frameNumberProperty = frame.frameNumberProperty.copy(value = frameNumber.toFloat())))
-
+    fun rows(rows: Int) = copy(frame = frame.rows(rows))
+    fun columns(columns: Int) = copy(frame = frame.columns(columns))
+    fun frameNumber(frameNumber: Int) = copy(frame = frame.frameNumber(frameNumber))
 }
 
 /**
@@ -126,4 +125,8 @@ data class Frame(
         get() = columnsProperty.value.toInt()
     val frameNumber: Int
         get() = frameNumberProperty.value.toInt()
+    fun rows(rows: Int) = copy(rowsProperty = rowsProperty.copy(value = rows.toFloat()))
+    fun columns(columns: Int) = copy(columnsProperty = columnsProperty.copy(value = columns.toFloat()))
+    fun frameNumber(frameNumber: Int) = copy(frameNumberProperty = frameNumberProperty.copy(value = frameNumber.toFloat()))
+
 }
