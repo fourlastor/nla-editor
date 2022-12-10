@@ -13,6 +13,7 @@ import com.arkivanov.essenty.parcelable.Parcelable
 import io.github.fourlastor.editor.EditorComponent
 import io.github.fourlastor.load.LoadComponent
 import io.github.fourlastor.newProject.NewProjectComponent
+import io.github.fourlastor.test.TestComponent
 import io.github.fourlastor.toolbar.Toolbar
 import io.github.fourlastor.toolbar.ToolbarButton
 
@@ -29,24 +30,24 @@ class NavHostComponent(
 
     private fun createScreenComponent(
         screenConfig: ScreenConfig,
-        componentContext: ComponentContext
+        context: ComponentContext
     ): Component = when (screenConfig) {
-
         is ScreenConfig.New -> NewProjectComponent(
-            context = componentContext,
+            context = context,
             onNewProject = ::openProject
         )
-
         is ScreenConfig.Project -> EditorComponent(
-            componentContext,
+            context,
             path = screenConfig.name
         )
 
         is ScreenConfig.Load -> LoadComponent(
             onLoad = ::openProject,
             onCancel = { navigation.pop() },
-            context = componentContext
+            context = context
         )
+
+        is ScreenConfig.Test -> TestComponent(context)
     }
 
     fun loadProject() {
@@ -79,6 +80,7 @@ class NavHostComponent(
     }
 
     private sealed class ScreenConfig : Parcelable {
+        object Test : ScreenConfig()
         object New : ScreenConfig()
         data class Project(val name: String) : ScreenConfig()
         object Load : ScreenConfig()
