@@ -13,7 +13,7 @@ import kotlin.time.Duration
 
 @Composable
 fun AnimationEditor(
-    loadable: LoadableProject,
+    project: LoadableProject,
     entityUpdater: EntityUpdater,
     onAddGroup: (parentId: Long) -> Unit,
     onDeleteEntity: (id: Long) -> Unit,
@@ -22,17 +22,14 @@ fun AnimationEditor(
     onAddKeyFrame: (animationId: Long, entityId: Long, propertyId: Long, value: Float, position: Duration) -> Unit,
     onUpdateAnimation: (animationId: Long, update: (Animation) -> Animation) -> Unit,
 ) {
-    if (loadable !is LoadableProject.Loaded) {
+    if (project !is LoadableProject.Loaded) {
         return
     }
-    val animations = loadable.animations
-    val entities = loadable.entities
 
     /** Local state. When this is set, a "new entity" popup is displayed. */
     var newImageParentId: Long? by remember { mutableStateOf(null) }
     EditorUi(
-        animations = animations,
-        entities = entities,
+        project = project,
         entityUpdater = entityUpdater,
         onAddGroup = onAddGroup,
         onDeleteEntity = onDeleteEntity,
@@ -44,7 +41,7 @@ fun AnimationEditor(
 
     AddImage(
         parentId = newImageParentId,
-        projectPath = loadable.path.parent!!.toString(),
+        projectPath = project.path,
         onAddImage = { parentId, name, path ->
             onAddImage(parentId, name, path)
             newImageParentId = null

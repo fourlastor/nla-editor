@@ -39,7 +39,7 @@ class NavHostComponent(
 
         is ScreenConfig.Project -> EditorComponent(
             context,
-            path = screenConfig.name
+            path = screenConfig.path
         )
 
         is ScreenConfig.Load -> LoadComponent(
@@ -83,7 +83,7 @@ class NavHostComponent(
     private sealed class ScreenConfig : Parcelable {
         object Test : ScreenConfig()
         object New : ScreenConfig()
-        data class Project(val name: String) : ScreenConfig()
+        data class Project(val path: String) : ScreenConfig()
         object Load : ScreenConfig()
     }
 }

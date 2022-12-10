@@ -42,7 +42,7 @@ class ViewModel(
             entities,
             animations,
         ) { entities, animations ->
-            LoadableProject.Loaded(entities, animations, path)
+            LoadableProject.Loaded(entities, animations, checkNotNull(path.parent))
         }
 
     @OptIn(ExperimentalSerializationApi::class)

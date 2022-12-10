@@ -51,7 +51,7 @@ class EditorComponent(
     override fun render() {
         val project by viewModel.project.collectAsState(LoadableProject.Loading)
         AnimationEditor(
-            loadable = project,
+            project = project,
             entityUpdater = { id, update -> viewModel.updateEntity(id, update) },
             onAddGroup = { viewModel.group(it, "Group") },
             onDeleteEntity = { viewModel.deleteEntity(it) },
