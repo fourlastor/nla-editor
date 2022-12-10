@@ -1,6 +1,7 @@
 package io.github.fourlastor.newProject
 
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -17,14 +18,20 @@ import io.kanro.compose.jetbrains.expui.control.PrimaryButton
 @Composable
 fun NewProject(
     onNewProject: (path: String) -> Unit,
+    onLoadProject: () -> Unit,
 ) {
     var dialogVisible by remember { mutableStateOf(false) }
-    Box(
+    Column(
         modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
         PrimaryButton(onClick = { dialogVisible = true }) {
-            Label("Create new project", fontSize = 30.sp)
+            Label("New project", fontSize = 30.sp)
+        }
+        Label("or", fontSize = 30.sp)
+        PrimaryButton(onClick = { onLoadProject() }) {
+            Label("Load project", fontSize = 30.sp)
         }
     }
     if (dialogVisible) {

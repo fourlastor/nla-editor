@@ -34,7 +34,8 @@ class NavHostComponent(
     ): Component = when (screenConfig) {
         is ScreenConfig.New -> NewProjectComponent(
             context = context,
-            onNewProject = ::openProject
+            onNewProject = ::openProject,
+            onLoadProject = ::loadProject
         )
 
         is ScreenConfig.Project -> EditorComponent(
