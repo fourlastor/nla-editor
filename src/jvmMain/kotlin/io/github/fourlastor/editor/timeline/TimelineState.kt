@@ -52,20 +52,6 @@ fun rememberTimelineState(
 }
 
 private fun Entity.toTimelineElements(animation: Animation): List<TimelineElement> {
-    /* Couldn't get this working - first listOf returns List<Any>
-    val trackElements = animation.tracks.values.flatMap { entityTracks ->
-        entityTracks.properties.keys.map { propertyId ->
-            Track(
-                propertyId,
-                animation.keyFrames(
-                    entityId = id,
-                    propertyId = propertyId,
-                )
-            )
-        }
-    }
-    return listOf(Spacer(id)) + trackElements
-    */
     val trackElements = listOf(
         Spacer(id),
         Track(
