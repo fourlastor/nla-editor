@@ -9,9 +9,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import io.github.fourlastor.data.Animation
-import io.github.fourlastor.data.Animations
-import io.github.fourlastor.data.Entities
 import io.github.fourlastor.data.EntityUpdater
+import io.github.fourlastor.data.LoadableProject
 import io.github.fourlastor.editor.animationmode.EditorMode
 import io.github.fourlastor.editor.layers.LayersPane
 import io.github.fourlastor.editor.properties.AnimationPropertiesEditor
@@ -31,8 +30,7 @@ import kotlin.time.Duration
 @Composable
 @OptIn(ExperimentalFoundationApi::class)
 fun EditorUi(
-    entities: Entities,
-    animations: Animations,
+    project: LoadableProject.Loaded,
     entityUpdater: EntityUpdater,
     onAddGroup: (parentId: Long) -> Unit,
     onDeleteEntity: (parentId: Long) -> Unit,
@@ -41,6 +39,8 @@ fun EditorUi(
     onAddKeyFrame: (animationId: Long, entityId: Long, propertyId: Long, value: Float, position: Duration) -> Unit,
     onUpdateAnimation: (animationId: Long, update: (Animation) -> Animation) -> Unit,
 ) {
+    val entities = project.entities
+    val animations = project.animations
     var viewState: ViewState by remember { mutableStateOf(ViewState.initial()) }
     val animationPropertiesHeight = remember { 30.dp }
     val timelineScrollbarHeight = remember { 4.dp }
@@ -65,7 +65,7 @@ fun EditorUi(
             modifier = Modifier.weight(1f),
             topLeft = {
                 PreviewPane(
-                    entities = entities,
+                    project = project,
                     modifier = Modifier.matchParentSize(),
                 )
             },

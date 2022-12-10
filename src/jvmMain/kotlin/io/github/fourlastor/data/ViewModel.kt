@@ -1,13 +1,27 @@
 package io.github.fourlastor.data
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.updateAndGet
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromStream
+import kotlinx.serialization.json.encodeToStream
+import okio.FileSystem
+import okio.Path
 import kotlin.time.Duration
 
-class ViewModel {
+class ViewModel(
+    private val scope: CoroutineScope,
+    private val fileSystem: FileSystem,
+    private val path: Path,
+) {
     private val entityIds = MutableStateFlow(0L)
     private val propertyIds = MutableStateFlow(0L)
     private val animationIds = MutableStateFlow(0L)
@@ -27,16 +41,58 @@ class ViewModel {
         get() = combine(
             entities,
             animations,
-            entityIds,
-            animationIds,
-            propertyIds
-        ) { entities, animations, entityId, animationId, propertyId ->
-            LoadableProject.Loaded(
-                PersistableProject.V1(entities, animations, entityId, animationId, propertyId)
-            )
+        ) { entities, animations ->
+            LoadableProject.Loaded(entities, animations, checkNotNull(path.parent))
         }
 
-    fun load(project: LatestProject) {
+    @OptIn(ExperimentalSerializationApi::class)
+    fun load() {
+        scope.launch {
+            withContext(Dispatchers.IO) {
+                if (fileSystem.exists(path)) {
+                    fileSystem.read(path) {
+                        inputStream().use {
+                            Json.decodeFromStream(
+                                stream = it,
+                                deserializer = PersistableProject.serializer()
+                            ).migrateToLatest()
+                        }.also {
+                            updateWith(it)
+                        }
+                    }
+                } else {
+                    save()
+                }
+            }
+        }
+    }
+
+    @OptIn(ExperimentalSerializationApi::class)
+    fun save() {
+        fileSystem.write(path) {
+            val project = LatestProject(
+                entities.value,
+                animations.value,
+                entityIds.value,
+                propertyIds.value,
+                animationIds.value,
+            )
+            outputStream().use {
+                Json.encodeToStream(
+                    value = project,
+                    stream = it,
+                    serializer = PersistableProject.serializer(),
+                )
+            }
+        }
+    }
+
+    /** This will be useful in the future, to version the projects. */
+    private fun PersistableProject.migrateToLatest(): LatestProject = when (this) {
+        is PersistableProject.V1 -> this
+    }
+
+    private fun updateWith(project: LatestProject) {
         entities.update { project.entities }
         animations.update { project.animations }
         entityIds.update { project.lastEntityId }
