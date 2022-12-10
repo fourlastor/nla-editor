@@ -4,55 +4,93 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import org.jetbrains.skiko.MainUIDispatcher
-import java.awt.Frame
+import org.lwjgl.system.MemoryUtil.memAllocPointer
+import org.lwjgl.system.MemoryUtil.memFree
+import org.lwjgl.util.nfd.NativeFileDialog
 import java.io.File
-import javax.swing.JFileChooser
 
 @Composable
 fun FileLoadDialog(
-    parent: Frame? = null,
     onCloseRequest: (result: File?) -> Unit,
-    config: JFileChooser.() -> Unit = {},
+    filterList: String,
+    initialPath: String? = null,
 ) {
-    FileDialog(config, onCloseRequest) { it.showOpenDialog(parent) }
+    FileDialog(
+        type = Type.Load,
+        filterList = filterList,
+        onCloseRequest = onCloseRequest,
+        initialPath = initialPath,
+    )
 }
 
 @Composable
 fun FileSaveDialog(
-    parent: Frame? = null,
     onCloseRequest: (result: File?) -> Unit,
-    config: JFileChooser.() -> Unit = {},
+    filterList: String? = null,
+    initialPath: String? = null,
 ) {
-    FileDialog(config, onCloseRequest) { it.showSaveDialog(parent) }
+    FileDialog(
+        type = Type.Save,
+        filterList = filterList,
+        onCloseRequest = onCloseRequest,
+        initialPath = initialPath,
+    )
 }
 
 @Composable
 private fun FileDialog(
-    config: JFileChooser.() -> Unit,
+    type: Type,
+    initialPath: String?,
+    filterList: String? = null,
     onCloseRequest: (result: File?) -> Unit,
-    action: (JFileChooser) -> Int,
 ) {
     val scope = rememberCoroutineScope()
     DisposableEffect(Unit) {
         val job = scope.launch {
-            val chooser = JFileChooser().apply(config)
-            val result = withContext(MainUIDispatcher) {
-                action(chooser)
+            val path = (initialPath ?: System.getProperty("user.home")).let {
+                if (System.getProperty("os.name").lowercase().contains("win")) {
+                    it.replace("/", "\\")
+                } else {
+                    it
+                }
             }
-            val file = when (result) {
-                JFileChooser.APPROVE_OPTION -> {
-                    chooser.selectedFile
+
+            val pathPointer = memAllocPointer(1)
+
+            try {
+                val status = when (type) {
+                    Type.Load -> NativeFileDialog.NFD_OpenDialog(filterList, path, pathPointer)
+                    Type.Save -> NativeFileDialog.NFD_SaveDialog(filterList, path, pathPointer)
                 }
 
-                else -> null
+
+                if (status == NativeFileDialog.NFD_CANCEL) {
+                    onCloseRequest(null)
+                    return@launch
+                }
+
+                if (status != NativeFileDialog.NFD_OKAY) {
+                    println("Error with native dialog")
+                    onCloseRequest(null)
+                    return@launch
+                }
+
+                val result = pathPointer.getStringUTF8(0)
+                NativeFileDialog.nNFD_Free(pathPointer.get(0))
+                onCloseRequest(File(result))
+            } catch (e: Throwable) {
+                // TODO
+            } finally {
+                memFree(pathPointer)
             }
-            onCloseRequest(file)
         }
 
         onDispose {
             job.cancel()
         }
     }
+}
+
+private enum class Type {
+    Load, Save
 }
