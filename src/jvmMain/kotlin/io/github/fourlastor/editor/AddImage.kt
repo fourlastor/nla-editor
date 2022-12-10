@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import io.github.fourlastor.system.FileLoadDialog
 import okio.Path
 import okio.Path.Companion.toOkioPath
-import javax.swing.filechooser.FileNameExtensionFilter
 
 @Composable
 fun AddImage(
@@ -25,9 +24,7 @@ fun AddImage(
                 onCancel()
             }
         },
-        config = {
-            fileFilter = FileNameExtensionFilter("Images", "png", "jpeg", "jpg")
-            currentDirectory = projectPath.toFile()
-        }
+        filterList = "png,jpeg,jpg",
+        initialPath = projectPath.toString(),
     )
 }

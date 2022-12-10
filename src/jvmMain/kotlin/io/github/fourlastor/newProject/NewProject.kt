@@ -35,7 +35,8 @@ fun NewProject(
                 } else {
                     dialogVisible = false
                 }
-            }
+            },
+            filterList = "json"
         )
     }
 }

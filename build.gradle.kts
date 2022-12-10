@@ -44,8 +44,15 @@ kotlin {
                 implementation(libs.decomposeCompose)
                 implementation(libs.expui)
                 implementation(libs.immutableCollections)
+                implementation(libs.lwjgl)
+                implementation(libs.lwjglNfd)
                 implementation(libs.okio)
                 implementation(libs.serializationJson)
+                val natives = arrayOf("linux", "macos", "macos-arm64", "windows")
+                for (distribution in natives) {
+                    runtimeOnly("${libs.lwjgl.get()}:natives-$distribution")
+                    runtimeOnly("${libs.lwjglNfd.get()}:natives-$distribution")
+                }
             }
         }
         val jvmTest by getting
