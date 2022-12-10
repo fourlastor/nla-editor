@@ -150,6 +150,7 @@ class ViewModel(
                     transform = transform(),
                     path = path,
                     collapsed = false,
+                    frame = frame(),
                 )
             )
         }
@@ -181,6 +182,12 @@ class ViewModel(
         yProperty = property(0f),
         rotationProperty = property(0f),
         scaleProperty = property(1f),
+    )
+
+    private fun frame() = Frame(
+        rowsProperty = property(1f),
+        columnsProperty = property(1f),
+        frameNumberProperty = property(0f),
     )
 
     private fun property(value: Float) = PropertyValue(

@@ -63,6 +63,7 @@ data class Image(
     override val transform: Transform,
     override val collapsed: Boolean,
     val path: String,
+    val frame: Frame,
 ) : Entity {
 
     override fun x(x: Float) = copy(transform = transform.x(x))
@@ -76,6 +77,10 @@ data class Image(
     override fun name(name: String) = copy(name = name)
 
     override fun collapsed(collapsed: Boolean) = copy(collapsed = collapsed)
+
+    fun rows(rows: Int) = copy(frame = frame.rows(rows))
+    fun columns(columns: Int) = copy(frame = frame.columns(columns))
+    fun frameNumber(frameNumber: Int) = copy(frame = frame.frameNumber(frameNumber))
 }
 
 /**
@@ -105,4 +110,23 @@ data class Transform(
 
     fun rotation(rotation: Float) = copy(rotationProperty = rotationProperty.copy(value = rotation))
     fun scale(scale: Float) = copy(scaleProperty = scaleProperty.copy(value = scale))
+
+}
+
+@Serializable
+data class Frame(
+    val rowsProperty: PropertyValue,
+    val columnsProperty: PropertyValue,
+    val frameNumberProperty: PropertyValue,
+) {
+    val rows: Int
+        get() = rowsProperty.value.toInt()
+    val columns: Int
+        get() = columnsProperty.value.toInt()
+    val frameNumber: Int
+        get() = frameNumberProperty.value.toInt()
+    fun rows(rows: Int) = copy(rowsProperty = rowsProperty.copy(value = rows.toFloat()))
+    fun columns(columns: Int) = copy(columnsProperty = columnsProperty.copy(value = columns.toFloat()))
+    fun frameNumber(frameNumber: Int) = copy(frameNumberProperty = frameNumberProperty.copy(value = frameNumber.toFloat()))
+
 }

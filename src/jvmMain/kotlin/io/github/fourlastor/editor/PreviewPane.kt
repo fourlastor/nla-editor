@@ -23,8 +23,10 @@ import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.input.pointer.PointerButton
 import androidx.compose.ui.res.loadImageBitmap
 import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import io.github.fourlastor.data.Entities
 import io.github.fourlastor.data.Entity
+import io.github.fourlastor.data.Frame
 import io.github.fourlastor.data.Group
 import io.github.fourlastor.data.Image
 import io.github.fourlastor.data.LoadableProject
@@ -83,7 +85,8 @@ private fun Entity.toPreview(project: LoadableProject.Loaded): EntityPreview {
 
         is Image -> ImagePreview(
             image = loadImageFromPath(project.path.resolve(path)),
-            transform = transform
+            transform = transform,
+            frame = frame,
         )
     }
 }
@@ -110,10 +113,47 @@ private data class GroupPreview(
 private data class ImagePreview(
     val transform: Transform,
     val image: ImageBitmap,
+    val frame: Frame,
 ) : EntityPreview() {
+
+    private val Frame.maxNumberFrames: Int
+        get() {
+            return columns * rows
+        }
+    private val Frame.frameNumberAdjusted: Int
+        get() {
+            return frameNumber % maxNumberFrames
+        }
+    private val Frame.width: Int
+        get() {
+            return image.width / columns
+        }
+    private val Frame.left: Int
+        get() {
+            return width * (frameNumberAdjusted % columns)
+        }
+    private val Frame.right: Int
+        get() {
+            return left + width
+        }
+    private val Frame.height: Int
+        get() {
+            return image.height / rows
+        }
+    private val Frame.top: Int
+        get() {
+            return height * (frameNumberAdjusted / columns)
+        }
+    private val Frame.bottom: Int
+        get() {
+            return top + height
+        }
+
     override fun draw(drawScope: DrawScope) = drawScope.withTransform(transform.action) {
         drawImage(
             image = image,
+            srcOffset = IntOffset(frame.left, frame.top),
+            srcSize = IntSize(frame.width, frame.height),
             dstOffset = intCenter - image.center,
             filterQuality = FilterQuality.None
         )
