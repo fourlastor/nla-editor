@@ -46,6 +46,12 @@ kotlin {
                 implementation(libs.immutableCollections)
                 implementation(libs.okio)
                 implementation(libs.serializationJson)
+
+                implementation("org.lwjgl:lwjgl-nfd:3.2.3")
+                implementation("org.lwjgl:lwjgl-nfd:3.2.3:natives-windows")
+                implementation("org.lwjgl:lwjgl-nfd:3.2.3:natives-windows-x86")
+                implementation("org.lwjgl:lwjgl-nfd:3.2.3:natives-linux")
+                implementation("org.lwjgl:lwjgl-nfd:3.2.3:natives-macos")
             }
         }
         val jvmTest by getting
