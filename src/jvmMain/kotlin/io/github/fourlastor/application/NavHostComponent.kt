@@ -36,6 +36,7 @@ class NavHostComponent(
             context = context,
             onNewProject = ::openProject
         )
+
         is ScreenConfig.Project -> EditorComponent(
             context,
             path = screenConfig.name
@@ -50,7 +51,7 @@ class NavHostComponent(
         is ScreenConfig.Test -> TestComponent(context)
     }
 
-    fun loadProject() {
+    private fun loadProject() {
         navigation.push(ScreenConfig.Load)
     }
 
