@@ -40,6 +40,7 @@ import java.io.File
 
 @Composable
 fun NewFileDialog(
+    state: FileDialogState.Loaded,
     onCloseRequest: (result: File?) -> Unit
 ) {
     var visible by remember { mutableStateOf(true) }
@@ -84,7 +85,10 @@ fun NewFileDialog(
                     val modifier = Modifier.weight(1f)
                     DarkField("/", {}, modifier)
                 }
-                FileList(Modifier.weight(1f).fillMaxWidth())
+                FileList(
+                    state = state,
+                    modifier = Modifier.weight(1f).fillMaxWidth(),
+                )
             }
         }
     }
@@ -130,7 +134,10 @@ private fun DarkField(
 }
 
 @Composable
-private fun FileList(modifier: Modifier) {
+private fun FileList(
+    state: FileDialogState.Loaded,
+    modifier: Modifier = Modifier,
+) {
     val bg = remember { Color(0xff292929) }
     val headerBg = remember { Color(0xff3e3e3e) }
     val oddBg = remember { Color(0xff333333) }
@@ -149,26 +156,28 @@ private fun FileList(modifier: Modifier) {
         ) {
             Label("Name", fontSize = fontSize)
         }
-        val elements = listOf(
-            "bin", "boot", "etc", "home", "lib64", "media", "mnt", "opt", "sys", "usr", "var"
-        )
         LazyColumn(
             modifier = Modifier.fillMaxWidth().weight(1f),
         ) {
-            items(elements.size, key = { elements[it] }) {
-                val bgColor = if (it % 2 == 0) evenBg else oddBg
-                Row(
-                    modifier = Modifier.fillMaxWidth().background(bgColor).padding(2.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(2.dp)
-                ) {
-                    Image(
-                        themedSvgResource("icons/folder.svg"),
-                        null,
-                        colorFilter = ColorFilter.tint(folderColor),
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Label(elements[it], fontSize = fontSize)
+            state.files.forEachIndexed { i, file ->
+                val bgColor = if (i % 2 == 0) evenBg else oddBg
+                item(key = file.name) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().background(bgColor)
+                            .padding(horizontal = 4.dp, vertical = 2.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(2.dp)
+                    ) {
+                        if (file is FileDialogEntry.Folder) {
+                            Image(
+                                themedSvgResource("icons/folder.svg"),
+                                null,
+                                colorFilter = ColorFilter.tint(folderColor),
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                        Label(file.name, fontSize = fontSize)
+                    }
                 }
             }
         }
