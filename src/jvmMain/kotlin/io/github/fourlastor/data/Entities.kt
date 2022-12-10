@@ -29,6 +29,9 @@ data class Entities(
         return checkNotNull(entities[id]) { "Entity with id $id not found" }
     }
 
+    fun children(parentId: Long): List<Entity> =
+        entities.values.filter { it.parentId == parentId }
+
     companion object {
 
         /** Initial empty state. */

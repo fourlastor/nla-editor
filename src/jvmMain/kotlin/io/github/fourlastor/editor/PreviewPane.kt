@@ -24,14 +24,14 @@ import androidx.compose.ui.input.pointer.PointerButton
 import androidx.compose.ui.res.loadImageBitmap
 import androidx.compose.ui.unit.IntOffset
 import io.github.fourlastor.data.Entities
+import io.github.fourlastor.data.Entity
+import io.github.fourlastor.data.Group
+import io.github.fourlastor.data.Image
+import io.github.fourlastor.data.LoadableProject
 import io.github.fourlastor.data.Transform
-import io.github.fourlastor.editor.state.EntityNode
-import io.github.fourlastor.editor.state.GroupNode
-import io.github.fourlastor.editor.state.ImageNode
-import io.github.fourlastor.editor.state.toEntitiesState
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
-import java.io.File
+import okio.Path
 
 /**
  * Displays a preview of the current project.
@@ -40,15 +40,12 @@ import java.io.File
 @ExperimentalFoundationApi
 @Composable
 fun PreviewPane(
-    entities: Entities,
+    project: LoadableProject.Loaded,
     modifier: Modifier,
 ) {
-    val entityPreview by remember(entities) {
+    val entityPreview by remember(project) {
         derivedStateOf {
-            entities
-                .toEntitiesState()
-                .asNode()
-                .toPreview()
+            project.toPreview()
         }
     }
     var pan by remember { mutableStateOf(Offset.Zero) }
@@ -70,21 +67,29 @@ fun PreviewPane(
     }
 }
 
-/** Transforms [this@toPreview] to a version that can be displayed, loading images and so forth. */
-private fun EntityNode.toPreview(): EntityPreview = when (this) {
-    is GroupNode -> GroupPreview(
-        entities = children.map { it.toPreview() }.toImmutableList(),
-        transform = entity.transform,
-    )
-
-    is ImageNode -> ImagePreview(
-        image = loadImageFromPath(entity.path),
-        transform = entity.transform,
-    )
+private fun LoadableProject.Loaded.toPreview(): EntityPreview {
+    return entities.root.toPreview(this)
 }
 
-private fun loadImageFromPath(path: String): ImageBitmap =
-    File(path).inputStream().buffered().use(::loadImageBitmap)
+private val Entities.root: Entity
+    get() = this[0]
+
+private fun Entity.toPreview(project: LoadableProject.Loaded): EntityPreview {
+    return when (this) {
+        is Group -> GroupPreview(
+            entities = project.entities.children(id).map { it.toPreview(project) }.toImmutableList(),
+            transform = transform,
+        )
+
+        is Image -> ImagePreview(
+            image = loadImageFromPath(project.path.resolve(path)),
+            transform = transform
+        )
+    }
+}
+
+private fun loadImageFromPath(path: Path): ImageBitmap =
+    path.toFile().inputStream().buffered().use(::loadImageBitmap)
 
 private sealed class EntityPreview {
     abstract fun draw(drawScope: DrawScope)

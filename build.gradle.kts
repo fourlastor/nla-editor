@@ -40,8 +40,11 @@ kotlin {
                 implementation(compose.desktop.currentOs) {
                     exclude("org.jetbrains.compose.material")
                 }
+                implementation(libs.decompose)
+                implementation(libs.decomposeCompose)
                 implementation(libs.expui)
                 implementation(libs.immutableCollections)
+                implementation(libs.okio)
                 implementation(libs.serializationJson)
             }
         }
