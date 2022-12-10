@@ -19,7 +19,7 @@ fun AddImage(
     FileLoadDialog(
         onCloseRequest = {
             if (it != null) {
-                onAddImage(parentId, "Image", it.toOkioPath().relativeTo(projectPath).toFile().absolutePath)
+                onAddImage(parentId, "Image", it.toOkioPath().relativeTo(projectPath).normalized().toString())
             } else {
                 onCancel()
             }
