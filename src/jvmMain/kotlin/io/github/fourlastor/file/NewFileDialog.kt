@@ -1,7 +1,9 @@
 package io.github.fourlastor.file
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -119,10 +121,11 @@ private fun DarkField(
     val style = textStyle.merge(
         TextStyle(color = Color.White, fontSize = 16.sp)
     )
+    var text by remember(value) { mutableStateOf(value) }
     Box(modifier = modifier.roundedCorners(Color.Black)) {
         BasicTextField(
-            value,
-            onValueChange,
+            text,
+            { text = it },
             textStyle = style,
             cursorBrush = SolidColor(Color.White),
             modifier = Modifier.padding(
@@ -133,6 +136,7 @@ private fun DarkField(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun FileList(
     state: FileDialogState.Loaded,
@@ -142,7 +146,9 @@ private fun FileList(
     val headerBg = remember { Color(0xff3e3e3e) }
     val oddBg = remember { Color(0xff333333) }
     val evenBg = remember { Color(0xff2c2c2c) }
+    val selectedBg = remember { Color(0xff3c5882) }
     val folderColor = remember { Color(0xFFbfa462) }
+    var selected by remember { mutableStateOf<String?>(null) }
     val fontSize = 16.sp
     Column(
         modifier = modifier.background(bg)
@@ -160,10 +166,17 @@ private fun FileList(
             modifier = Modifier.fillMaxWidth().weight(1f),
         ) {
             state.files.forEachIndexed { i, file ->
-                val bgColor = if (i % 2 == 0) evenBg else oddBg
+                val bgColor = when {
+                    selected == file.name -> selectedBg
+                    i % 2 == 0 -> evenBg
+                    else -> oddBg
+                }
                 item(key = file.name) {
                     Row(
-                        modifier = Modifier.fillMaxWidth().background(bgColor)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(bgColor)
+                            .combinedClickable(onClick = { selected = file.name })
                             .padding(horizontal = 4.dp, vertical = 2.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(2.dp)
@@ -187,7 +200,7 @@ private fun FileList(
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             DarkField(
-                value = "",
+                value = selected.orEmpty(),
                 onValueChange = {},
                 modifier = Modifier.weight(1f),
             )
