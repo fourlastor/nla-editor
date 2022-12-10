@@ -11,9 +11,9 @@ import com.arkivanov.decompose.router.stack.push
 import com.arkivanov.decompose.router.stack.replaceAll
 import com.arkivanov.essenty.parcelable.Parcelable
 import io.github.fourlastor.editor.EditorComponent
-import io.github.fourlastor.file.FileDialogComponent
 import io.github.fourlastor.load.LoadComponent
 import io.github.fourlastor.newProject.NewProjectComponent
+import io.github.fourlastor.test.TestComponent
 import io.github.fourlastor.toolbar.Toolbar
 import io.github.fourlastor.toolbar.ToolbarButton
 
@@ -24,7 +24,7 @@ class NavHostComponent(
     private val navigation = StackNavigation<ScreenConfig>()
     private val stack = childStack(
         source = navigation,
-        initialConfiguration = ScreenConfig.Test,
+        initialConfiguration = ScreenConfig.New,
         childFactory = ::createScreenComponent
     )
 
@@ -48,7 +48,7 @@ class NavHostComponent(
             context = context
         )
 
-        is ScreenConfig.Test -> FileDialogComponent(context)
+        is ScreenConfig.Test -> TestComponent(context)
     }
 
     private fun loadProject() {
